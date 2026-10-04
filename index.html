@@ -1,0 +1,1098 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="髪の履歴と、髪との付き合い方から、あなたの「髪の花タイプ」を診断。結果は髪の手帳としてLINEに保存して、美容院で見せるだけ。">
+<meta property="og:title" content="髪の花タイプ診断｜髪のお薬手帳">
+<meta property="og:description" content="あなたの髪は、何の花？約2分で診断できます。">
+<style>:root{box-sizing:border-box}body{margin:0}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>髪の花タイプ診断</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=DM+Mono:wght@500&display=swap">
+<style>
+/* Layout: phone-first single column. Intro (4 gardens) → Part 1 hair history (tiles) → Part 2 how you live with your hair (7-step agree scale) → result with trait bars → goal → route. */
+:root{
+  --bg:#EDF1EE; --surface:#FFFFFF; --ink:#1D2823; --muted:#5B6862; --line:#D2DBD5; --soft:#E3EAE5;
+  --accent:#2C6A4D; --accent-ink:#FFFFFF; --accent-soft:#D5E7DC; --warn:#97391F; --warn-bg:#F7E7E0; --ok:#2C6A4D; --ok-bg:#E1EFE6;
+  --agree:#2E8A63; --disagree:#B0543C;
+  --skin:#F1D9C6; --hair:#5A4436;
+  --display:"Kaisei Decol","Hiragino Mincho ProN","Yu Mincho",serif;
+  --body:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
+  --mono:"DM Mono",ui-monospace,"SFMono-Regular",monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#111614; --surface:#19201D; --ink:#E5ECE8; --muted:#9CAAA2; --line:#2B3530; --soft:#212A26;
+    --accent:#7CC39E; --accent-ink:#0F1A15; --accent-soft:#1E3328; --warn:#F0A78E; --warn-bg:#2E1E19; --ok:#7CC39E; --ok-bg:#1A2B22;
+    --agree:#6CC79C; --disagree:#E8957B;
+    --skin:#C9AE98; --hair:#8C6E5A; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111614; --surface:#19201D; --ink:#E5ECE8; --muted:#9CAAA2; --line:#2B3530; --soft:#212A26;
+  --accent:#7CC39E; --accent-ink:#0F1A15; --accent-soft:#1E3328; --warn:#F0A78E; --warn-bg:#2E1E19; --ok:#7CC39E; --ok-bg:#1A2B22;
+  --agree:#6CC79C; --disagree:#E8957B;
+  --skin:#C9AE98; --hair:#8C6E5A; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.75;padding:28px 16px 64px}
+.wrap{max-width:600px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+.brand{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:12px;color:var(--muted);letter-spacing:.08em}
+.brand b{font-family:var(--display);font-weight:700;font-size:15px;color:var(--ink);letter-spacing:.04em}
+.tag{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:999px;padding:1px 8px;white-space:nowrap}
+h1,h2,h3{font-family:var(--display);font-weight:700;text-wrap:balance;margin:0;line-height:1.35}
+h1{font-size:clamp(30px,8vw,42px)}
+h2{font-size:22px}
+h3{font-size:16px}
+p{margin:0}
+.lead{color:var(--muted)}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;flex-wrap:wrap;gap:10px}
+.center{text-align:center;align-items:center}
+button{font:inherit;cursor:pointer;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:12px 18px;transition:transform .12s ease,border-color .12s ease,background .12s ease,opacity .2s}
+button:hover{border-color:var(--accent)}
+button:active{transform:scale(.97)}
+button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.ghost{background:transparent}
+.small{padding:8px 14px;font-size:13px}
+.wide{width:100%}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px}
+.label{font-size:12px;letter-spacing:.1em;color:var(--muted)}
+.fine{font-size:12px;color:var(--muted)}
+.ico{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+
+/* intro */
+.hero-intro{padding-block:10px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
+.hero-flowers{display:flex;gap:4px;justify-content:center}
+.hero-flowers svg{width:44px;height:44px}
+.how{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:480px){.how{grid-template-columns:1fr}}
+.how div{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-width:0}
+.how b{display:block;font-family:var(--display);font-size:15px}
+.how .num{font-family:var(--mono);font-size:12px;color:var(--accent)}
+.gardens{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-width:440px){.gardens{grid-template-columns:1fr}}
+.garden{--g:#888;border-radius:16px;padding:14px;background:color-mix(in oklab,var(--g) 14%,var(--surface));border:1px solid color-mix(in oklab,var(--g) 35%,var(--line));min-width:0}
+.garden .gn{display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:700;font-size:16px}
+.garden .gn i{width:10px;height:10px;border-radius:50%;background:var(--g)}
+.garden .gd{font-size:12.5px;color:var(--muted);margin-top:2px}
+.garden .gf{display:flex;gap:12px;margin-top:10px}
+.garden .gf span{display:flex;flex-direction:column;align-items:center;font-size:12.5px;font-weight:700}
+.garden .gf svg{width:48px;height:48px}
+
+/* quiz */
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:8px;display:flex;flex-direction:column;gap:6px}
+.part{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.part b{color:var(--ink)}
+.pbar{height:6px;border-radius:6px;background:var(--line);overflow:hidden}
+.pbar i{display:block;height:100%;background:var(--accent);transition:width .3s ease}
+.qtitle{font-size:24px}
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.tiles.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:480px){.tiles.four{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:16px 8px;text-align:center;min-width:0;border-radius:16px;line-height:1.4}
+.tile svg.ico{width:34px;height:34px}
+.tile svg.len{width:58px;height:76px}
+.tile .tl{font-weight:700;font-size:14px}
+.tile small{color:var(--muted);font-size:11.5px}
+.tile[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 2px var(--accent) inset}
+.when{display:flex;flex-direction:column;gap:12px}
+.when-row{display:grid;grid-template-columns:7.5em 1fr;gap:10px;align-items:center}
+.when-row .wl{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;min-width:0}
+.when-row .wl svg{width:22px;height:22px;flex:none}
+.seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.seg button{padding:9px 4px;font-size:13px;border-radius:10px}
+.seg button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent);color:var(--accent-ink);font-weight:700}
+@media (max-width:420px){.when-row{grid-template-columns:1fr}}
+
+/* agree scale */
+.lk-list{display:flex;flex-direction:column}
+.lk{padding:26px 0;border-top:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:16px;transition:opacity .25s}
+.lk:first-child{border-top:0;padding-top:6px}
+.lk.done{opacity:.42}
+.lk.done:hover,.lk.done:focus-within{opacity:1}
+.lk .stmt{font-size:17px;font-weight:500;text-align:center;text-wrap:balance;max-width:30em}
+.scale{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;width:100%}
+.scale .end{font-size:13px;font-weight:700;white-space:nowrap}
+.scale .end.a{color:var(--agree)}
+.scale .end.d{color:var(--disagree)}
+.circles{display:flex;justify-content:center;align-items:center;gap:clamp(6px,2.2vw,14px)}
+.circles button{padding:0;border-radius:50%;border:2.5px solid var(--muted);background:transparent;flex:none}
+.circles button.a{border-color:var(--agree)}
+.circles button.d{border-color:var(--disagree)}
+.circles button.a:hover,.circles button.a[aria-pressed="true"]{background:var(--agree)}
+.circles button.d:hover,.circles button.d[aria-pressed="true"]{background:var(--disagree)}
+.circles button.n:hover,.circles button.n[aria-pressed="true"]{background:var(--muted)}
+.circles .s3{width:46px;height:46px}.circles .s2{width:38px;height:38px}.circles .s1{width:31px;height:31px}.circles .s0{width:25px;height:25px}
+@media (max-width:480px){
+  .scale{grid-template-columns:1fr 1fr;row-gap:8px}
+  .scale .circles{grid-column:1/-1;grid-row:1}
+  .scale .end.d{text-align:right}
+  .circles .s3{width:40px;height:40px}.circles .s2{width:33px;height:33px}.circles .s1{width:27px;height:27px}.circles .s0{width:22px;height:22px}
+}
+
+/* result */
+.res-hero{--g:#888;--c:#888;border-radius:22px;overflow:hidden;background:var(--surface);border:1px solid var(--line)}
+.res-top{padding:26px 22px 22px;background:color-mix(in oklab,var(--c) 15%,var(--surface));display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px}
+.res-top svg{width:132px;height:132px}
+.res-top .who{font-size:12px;letter-spacing:.12em;color:var(--muted)}
+.res-top .name{font-family:var(--display);font-weight:700;font-size:46px;line-height:1.1}
+.res-top .code{font-family:var(--mono);font-size:14px;letter-spacing:.16em}
+.res-top .gpill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:3px 12px;border-radius:999px;background:var(--surface);border:1px solid color-mix(in oklab,var(--g) 50%,var(--line))}
+.res-top .gpill i{width:9px;height:9px;border-radius:50%;background:var(--g)}
+.res-top .oneline{font-family:var(--display);font-size:18px;margin-top:6px}
+.res-body{padding:20px 22px 22px;display:flex;flex-direction:column;gap:18px}
+.traits{display:flex;flex-direction:column;gap:16px}
+.trait .tk{font-size:12px;color:var(--muted);letter-spacing:.08em}
+.trait .tv{font-weight:700;font-size:15px}
+.trait .tv span{font-family:var(--mono);font-size:15px}
+.track{position:relative;height:10px;border-radius:10px;background:var(--line);margin:6px 0 4px}
+.track .fill{position:absolute;top:0;bottom:0;border-radius:10px;background:var(--c)}
+.track .knob{position:absolute;top:50%;width:20px;height:20px;border-radius:50%;background:var(--surface);border:4px solid var(--c);transform:translate(-50%,-50%)}
+.ends{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.aru{border-radius:14px;background:var(--soft);padding:12px 14px}
+.aru .k{font-size:12px;color:var(--muted)}
+.aru p{font-family:var(--display);font-size:16px}
+.pair{display:flex;align-items:center;gap:10px;font-size:13.5px}
+.pair svg{width:36px;height:36px;flex:none}
+.pair b{font-family:var(--display)}
+.sign{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:11px;color:var(--muted);font-family:var(--mono);letter-spacing:.06em}
+
+/* save box */
+.save-box{border-radius:20px;padding:22px 20px;background:var(--accent-soft);border:1.5px solid var(--accent);display:flex;flex-direction:column;gap:16px}
+.benefits{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:480px){.benefits{grid-template-columns:1fr}}
+.benefits li{background:var(--surface);border-radius:12px;padding:10px 12px;font-size:12.5px;color:var(--muted);min-width:0}
+.benefits b{display:block;color:var(--ink);font-size:14px}
+button.big{padding:16px 18px;font-size:16px}
+.save-steps{display:flex;flex-direction:column;gap:10px}
+a.btnlink{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:12px;border:1px solid var(--accent);background:var(--surface);color:var(--ink);text-decoration:none;font-weight:700;font-size:15px}
+a.btnlink.primary-link{background:var(--accent);color:var(--accent-ink)}
+a.btnlink .sn{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-family:var(--mono);font-size:12px;border:1.5px solid currentColor;flex:none}
+a.btnlink:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+details.preview summary{cursor:pointer;font-size:13px;color:var(--muted)}
+details.preview pre{margin:8px 0 0;padding:12px;border-radius:12px;background:var(--surface);font-family:var(--body);font-size:13px;white-space:pre-wrap;word-break:break-word}
+
+/* story card: one fixed light look, because it becomes an image */
+.story{--c:#888;--g:#888;--surface:#FFFFFF;--ink:#1D2823;--muted:#5B6862;--line:#E3E7E4;--soft:#F2F4F2;
+  container-type:inline-size;width:min(100%,360px);aspect-ratio:9/16;margin:0 auto;border-radius:22px;overflow:hidden;
+  background:linear-gradient(180deg,color-mix(in oklab,var(--c) 30%,#FFFFFF) 0%,#FFFFFF 62%);color:var(--ink);
+  display:flex;flex-direction:column;justify-content:space-between;padding:7cqw 7cqw 6cqw;text-align:center;box-shadow:0 10px 30px rgba(20,30,25,.18)}
+.story .sb{font-family:var(--display);font-weight:700;font-size:4.2cqw;letter-spacing:.08em}
+.story .sw{font-size:3.6cqw;color:var(--muted);letter-spacing:.12em}
+.story svg.sf{width:38cqw;height:38cqw;margin:1cqw auto 0}
+.story .sn{font-family:var(--display);font-weight:700;font-size:13cqw;line-height:1.1}
+.story .sc{font-family:var(--mono);font-size:4cqw;letter-spacing:.18em}
+.story .sg{display:inline-flex;align-items:center;gap:1.6cqw;font-size:3.3cqw;font-weight:700;padding:.8cqw 3.2cqw;border-radius:999px;background:#FFFFFF;border:1px solid color-mix(in oklab,var(--g) 50%,#E3E7E4);margin:1.5cqw auto 0}
+.story .sg i{width:2.4cqw;height:2.4cqw;border-radius:50%;background:var(--g)}
+.story .sl{font-family:var(--display);font-size:4.6cqw;margin-top:2cqw}
+.story .sbars{display:flex;flex-direction:column;gap:3cqw;text-align:left}
+.story .sbar .top{display:flex;justify-content:space-between;font-size:3.2cqw;color:var(--muted)}
+.story .sbar .top b{color:var(--ink);font-size:3.6cqw}
+.story .strack{position:relative;height:2.2cqw;border-radius:2cqw;background:var(--line);margin-top:1cqw}
+.story .strack span{position:absolute;top:0;bottom:0;border-radius:2cqw;background:var(--c)}
+.story .saru{background:var(--soft);border-radius:3cqw;padding:3cqw 4cqw;font-family:var(--display);font-size:3.8cqw;text-align:left}
+.story .saru small{display:block;font-family:var(--body);font-size:3cqw;color:var(--muted)}
+.story .sfoot{display:flex;justify-content:space-between;align-items:center;font-size:3.2cqw;color:var(--muted)}
+.story .sfoot b{color:var(--ink);font-size:3.6cqw}
+
+/* goals */
+.goal-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:480px){.goal-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.goal-tiles .tile{padding:14px 6px}
+.goal-tiles .to{display:flex;align-items:center;gap:4px;font-size:11.5px;color:var(--muted)}
+.goal-tiles .to svg{width:18px;height:18px}
+
+[hidden]{display:none!important}
+/* my notebook banner */
+.mynote{display:grid;grid-template-columns:48px 1fr auto;gap:12px;align-items:center;padding:14px 16px;border-radius:18px;background:var(--surface);border:1.5px solid var(--accent)}
+.mynote svg{width:48px;height:48px}
+.mynote .mn-txt{display:flex;flex-direction:column;line-height:1.4;min-width:0}
+.mynote .mn-txt b{font-family:var(--display);font-size:16px}
+.mynote .mn-txt span{font-size:12.5px;color:var(--muted)}
+@media (max-width:440px){.mynote{grid-template-columns:44px 1fr}.mynote svg{width:44px;height:44px}.mynote button{grid-column:1/-1;width:100%;padding:14px}}
+/* stylist view */
+.show{--c:#888;--g:#888;border-radius:22px;overflow:hidden;background:var(--surface);border:1px solid var(--line)}
+.show-top{padding:18px 20px;background:color-mix(in oklab,var(--c) 15%,var(--surface));display:flex;align-items:center;gap:14px}
+.show-top svg{width:64px;height:64px;flex:none}
+.show-top .nm{font-family:var(--display);font-size:26px;font-weight:700;line-height:1.1}
+.show-top .sub{font-size:13px;color:var(--muted)}
+.show-for{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--surface);background:var(--ink);border-radius:6px;padding:3px 9px;margin-bottom:6px}
+.show-body{padding:16px 20px 20px;display:flex;flex-direction:column;gap:16px}
+.show-body .hist{font-size:15px}
+.show-date{font-size:12px;color:var(--muted)}
+/* notebook */
+details.notebook{border-radius:18px;border:1px solid var(--line);background:var(--surface)}
+details.notebook summary{list-style:none;cursor:pointer;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+details.notebook summary::-webkit-details-marker{display:none}
+details.notebook summary .chev{transition:transform .2s;color:var(--muted)}
+details.notebook[open] summary .chev{transform:rotate(180deg)}
+.note{--c:#888;padding:0 20px 20px;display:flex;flex-direction:column;gap:16px}
+.stamp{font-size:11.5px;font-weight:700;border-radius:8px;padding:3px 9px;white-space:nowrap;border:1.5px dashed var(--muted);color:var(--muted)}
+.stamp.ok{border:1.5px solid var(--ok);color:var(--ok);background:var(--ok-bg)}
+.hist{width:100%;border-collapse:collapse;font-size:13.5px}
+.hist th,.hist td{text-align:left;padding:8px 6px;border-top:1px solid var(--line);vertical-align:top}
+.hist th{font-weight:500;color:var(--muted);width:9em}
+.hist tr:first-child th,.hist tr:first-child td{border-top:0}
+.st{font-size:11px;border-radius:999px;padding:1px 8px;margin-left:6px;white-space:nowrap}
+.st.on{background:var(--warn-bg);color:var(--warn)}
+.st.off{background:var(--soft);color:var(--muted)}
+.meters{display:grid;gap:10px}
+.meter{display:grid;grid-template-columns:5.5em 1fr 3em;gap:10px;align-items:center;font-size:13px}
+.dots{display:flex;gap:5px}
+.dots i{flex:1;height:8px;border-radius:4px;background:var(--line)}
+.dots i.on{background:var(--c)}
+.meter .v{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right}
+.tell{border-radius:14px;background:var(--warn-bg);padding:14px 16px}
+.tell h3{color:var(--warn);font-size:14px;font-family:var(--body)}
+.tell ul{margin:6px 0 0;padding-left:1.2em}
+.kv{display:grid;grid-template-columns:7em 1fr;gap:6px 12px;font-size:13.5px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;min-width:0}
+.stylist{border-radius:14px;border:1.5px solid var(--ok);background:var(--ok-bg);padding:12px 14px;font-size:13.5px}
+.stylist b{color:var(--ok)}
+
+/* route */
+.fromto{display:flex;align-items:center;justify-content:center;gap:10px}
+.fromto .f{display:flex;flex-direction:column;align-items:center;min-width:0}
+.fromto svg{width:72px;height:72px}
+.fromto .n{font-family:var(--display);font-weight:700}
+.fromto .arrow{flex:1;max-width:120px;height:2px;background:repeating-linear-gradient(90deg,var(--muted) 0 6px,transparent 6px 11px);position:relative}
+.fromto .arrow::after{content:"";position:absolute;right:-2px;top:-4px;border:5px solid transparent;border-left:8px solid var(--muted)}
+.goal-label{text-align:center;font-family:var(--display);font-size:18px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--soft);border-radius:12px;padding:10px 14px}
+.stat .k{font-size:12px;color:var(--muted)}
+.stat .v{font-size:20px;font-weight:700}
+.stars{letter-spacing:.12em;color:var(--warn)}
+.stars .off{color:var(--line)}
+ol.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;counter-reset:s}
+ol.steps li{counter-increment:s;display:grid;grid-template-columns:30px 1fr;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+ol.steps li:first-child{border-top:0}
+ol.steps li::before{content:counter(s);width:26px;height:26px;border-radius:50%;border:1.5px solid var(--accent);color:var(--accent);display:grid;place-items:center;font-family:var(--mono);font-size:12px}
+ol.steps b{display:block}
+ol.steps .d{font-size:13.5px;color:var(--muted)}
+.lvl{font-size:11px;margin-left:6px;padding:1px 7px;border-radius:999px;background:var(--warn-bg);color:var(--warn);font-weight:500;white-space:nowrap}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12px;padding:3px 10px;border-radius:999px;background:var(--soft);color:var(--ink)}
+.pro{display:flex;gap:14px;align-items:flex-start}
+.avatar{width:44px;height:44px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-family:var(--display);font-weight:700;flex:none}
+.pro .meta{min-width:0}
+.sample{font-size:10.5px;border:1px dashed var(--muted);color:var(--muted);border-radius:6px;padding:0 6px;margin-left:6px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:13px;max-width:calc(100% - 32px);text-align:center;z-index:10}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+.fade{animation:fade .28s ease both}
+@keyframes fade{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}
+</style>
+
+<div class="wrap">
+  <div class="brand"><b>髪のお薬手帳</b><span class="tag">PROTOTYPE</span></div>
+
+  <!-- intro -->
+  <section id="s-intro" class="stack" style="gap:24px">
+    <div class="mynote" id="mynote" hidden>
+      <div id="mynote-flower"></div>
+      <div class="mn-txt"><b>あなたの髪の手帳</b><span id="mynote-sub"></span></div>
+      <button class="primary" id="btn-mynote">美容師に見せる</button>
+    </div>
+    <div class="hero-intro">
+      <div class="hero-flowers" id="hero-flowers"></div>
+      <h1>あなたの髪は、何の花？</h1>
+      <p class="lead">髪の履歴と、髪との付き合い方から、あなたの「髪の花タイプ」を診断します。所要時間は約2分です。</p>
+      <div class="row" style="justify-content:center">
+        <button class="primary" id="btn-start">診断をはじめる →</button>
+        <button class="ghost" id="btn-sample">サンプル結果を見る</button>
+      </div>
+    </div>
+    <div class="how">
+      <div><span class="num">1</span><b>テストに答える</b><span class="fine">髪の履歴をタップして、あとは「そう思う／思わない」で答えるだけ。</span></div>
+      <div><span class="num">2</span><b>花タイプを知る</b><span class="fine">8つの花のどれか。冒険派かキープ派かなど、髪との付き合い方も％で分かります。</span></div>
+      <div><span class="num">3</span><b>なりたい髪へ</b><span class="fine">目指す髪までの道のりと、得意な美容師が見つかります。</span></div>
+    </div>
+    <div class="stack">
+      <h2>4つの庭と、8つの花</h2>
+      <div class="gardens" id="gardens"></div>
+      <p class="fine">履歴は「やったことがあるか」ではなく「今の髪に残っているか」で判定します。髪は1か月に約1cm伸びる計算です。</p>
+    </div>
+  </section>
+
+  <!-- quiz -->
+  <section id="s-quiz" class="stack" hidden>
+    <div class="topbar">
+      <div class="part"><span id="part-label"><b>パート1</b> 髪の履歴</span><span id="pct-label">0%</span></div>
+      <div class="pbar"><i id="pbar" style="width:0%"></i></div>
+    </div>
+    <div class="stack fade" id="q-panel">
+      <h2 class="qtitle" id="q-text"></h2>
+      <p class="lead" id="q-hint"></p>
+      <div id="q-body"></div>
+      <div id="q-next-wrap" hidden><button class="primary wide" id="btn-next">次へ</button></div>
+    </div>
+    <div><button class="ghost small" id="btn-back">← 戻る</button></div>
+  </section>
+
+  <!-- result -->
+  <section id="s-result" class="stack" hidden>
+    <article class="res-hero fade" id="res"></article>
+    <div class="save-box">
+      <div class="stack" style="gap:6px">
+        <h2>次の美容院で、見せるだけ。</h2>
+        <p class="lead" style="font-size:14px">この結果を「髪の手帳」としてLINEに保存できます。カウンセリングで履歴を思い出す必要がなくなります。</p>
+      </div>
+      <ul class="benefits">
+        <li><b>履歴がまとまる</b>ブリーチや矯正の時期を、美容師にそのまま見せられる</li>
+        <li><b>美容師が書き足す</b>施術のたびに記録が増えて「確認済み」に</li>
+        <li><b>次の目安が届く</b>リタッチやカットの時期をお知らせ</li>
+      </ul>
+      <div class="save-steps">
+        <a class="btnlink" id="a-friend" href="#" target="_blank" rel="noopener"><span class="sn">1</span>「髪の手帳」を友だち追加</a>
+        <a class="btnlink primary-link" id="a-send" href="#" target="_blank" rel="noopener"><span class="sn">2</span>結果を送って、手帳を作る</a>
+      </div>
+      <details class="preview"><summary>LINEに送られる内容を見る</summary><pre id="save-preview"></pre></details>
+    </div>
+    <div class="row">
+      <button id="btn-story">ストーリー用の画像を見る</button>
+      <button class="ghost" id="btn-retry">もう一度診断</button>
+    </div>
+    <div class="panel stack">
+      <h2>どんな髪になりたい？</h2>
+      <div class="goal-tiles" id="goals"></div>
+    </div>
+    <details class="notebook" id="notebook">
+      <summary><span><b>髪の手帳 1ページ目</b><br><span class="fine">美容師に見せる用（履歴・リスク）</span></span><span class="row" style="align-items:center;gap:8px"><span class="stamp" id="stamp-sum">未確認</span><span class="chev" aria-hidden="true">▾</span></span></summary>
+      <div class="note" id="note"></div>
+    </details>
+  </section>
+
+  <!-- stylist view -->
+  <section id="s-show" class="stack" hidden>
+    <article class="show fade" id="show"></article>
+    <div class="row">
+      <button id="btn-show-result">自分の診断結果を見る</button>
+      <button class="ghost" id="btn-show-retry">もう一度診断</button>
+    </div>
+  </section>
+
+  <!-- story -->
+  <section id="s-story" class="stack center" hidden>
+    <p class="lead" style="font-size:14px">この画面をスクリーンショットして、Instagramのストーリーに載せてください。</p>
+    <div class="story" id="story"></div>
+    <div class="row" style="justify-content:center">
+      <button id="btn-story-back">← 結果に戻る</button>
+      <button class="ghost" id="btn-copy">文章をコピー</button>
+    </div>
+    <p class="fine">本番では、LINEから画像として受け取れるようにします。</p>
+  </section>
+
+  <!-- route -->
+  <section id="s-route" class="stack" hidden>
+    <div class="panel stack fade" id="route"></div>
+    <div class="row">
+      <button id="btn-route-back">← ほかの髪も見る</button>
+      <button class="ghost" id="btn-route-copy">ルートをコピー</button>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+/* ---------- LINE settings: fill these in after creating the 髪の手帳 account ---------- */
+const LINE_ID = '@910jpcio';   /* テスト用：事前診断LINE｜サロン向けデモ */
+const FRIEND_URL = 'https://line.me/R/ti/p/%40910jpcio';
+const PAGE_URL = 'https://kachelthunder.github.io/kami-techo/';
+const STORE_KEY = 'kami-techo-v1';
+const LINK_WORKS = true; /* true にするのは、#m= がページに届く場所で公開したとき */
+
+/* ---------- data ---------- */
+const GARDENS = {
+  NF:{name:'まっさらの庭',desc:'色も矯正も残っていない髪',color:'#4E9A6A'},
+  NR:{name:'ストレートの庭',desc:'縮毛矯正の履歴がある髪',color:'#5872C4'},
+  BF:{name:'カラーの庭',desc:'カラーの履歴がある髪',color:'#C2455E'},
+  BR:{name:'ミックスの庭',desc:'色と矯正、両方の履歴がある髪',color:'#8A55B0'},
+};
+const TYPES = {
+  NF_A:{name:'ひまわり',line:'まっさらな髪で、何にでも挑戦できる',aru:'ヘアカタログを見るたびに、次の髪型を決めてしまう',pair:'BF_A',menu:'デザインカット、初めてのカラー',care:'紫外線から守るヘアミスト',
+    fx:{color:'#E8B526',center:'#6B4423',cr:12,layers:[{n:16,rx:5,ry:17,d:21,op:1}]}},
+  NF_C:{name:'すずらん',line:'まっさらな髪を、大切に守る',aru:'「いつもので」で通じる美容師が一人いる',pair:'NR_C',menu:'定期カット、トリートメント',care:'洗い流さないトリートメント',
+    fx:{color:'#86BF98',center:'#EEF4EC',cr:7,layers:[{n:6,rx:10,ry:15,d:13,op:1}]}},
+  NR_A:{name:'グラジオラス',line:'まっすぐな髪で、攻めたデザインに',aru:'ストレートなのに、毎回ちがう前髪にしている',pair:'BR_A',menu:'矯正毛に合わせたデザインカット',care:'アイロン前の熱保護ミスト',
+    fx:{color:'#E2694F',center:'#F6C49F',cr:7,layers:[{n:6,rx:10,ry:20,d:17,op:1}]}},
+  NR_C:{name:'あじさい',line:'梅雨に負けないストレートをキープ',aru:'梅雨の天気予報を見て、美容院の予約を入れる',pair:'NF_C',menu:'根元の縮毛矯正リタッチ',care:'湿気をはじくヘアオイル',
+    fx:{color:'#7D8CD6',center:'#4D5BAE',cr:5,layers:[{n:4,rx:12,ry:14,d:16,op:.55,rot:45},{n:4,rx:12,ry:14,d:15,op:1}]}},
+  BF_A:{name:'バラ',line:'色を極める、ハイトーンの上級者',aru:'根元が伸びてくると、そわそわし始める',pair:'NF_A',menu:'ケアブリーチ、デザインカラー',care:'色落ちを防ぐカラーシャンプー',
+    fx:{color:'#C42F49',center:'#86182E',cr:4,layers:[{n:5,rx:15,ry:17,d:14,op:.5},{n:5,rx:11,ry:12,d:9,op:.78,rot:36},{n:4,rx:7,ry:8,d:4,op:1}]}},
+  BF_C:{name:'ラナンキュラス',line:'色の履歴を、丁寧にキープ',aru:'色落ちしていく途中の色も、ちょっと好き',pair:'BR_C',menu:'リタッチカラー、髪質改善トリートメント',care:'補修系のトリートメント',
+    fx:{color:'#EC9671',center:'#C4613F',cr:4,layers:[{n:8,rx:12,ry:12,d:17,op:.45},{n:7,rx:10,ry:10,d:10,op:.72,rot:20},{n:6,rx:7,ry:7,d:5,op:1}]}},
+  BR_A:{name:'蘭',line:'色も矯正も楽しむ、繊細な上級者',aru:'美容師に「それ、できますか？」と聞くのが少し得意',pair:'NR_A',menu:'事前カウンセリング付きのメニュー',care:'毛先の補修オイル',
+    fx:{color:'#BE55A3',center:'#F1D25A',cr:5,layers:[{n:5,rx:9,ry:20,d:17,op:1}]}},
+  BR_C:{name:'椿',line:'繊細な髪を、いちばん丁寧に',aru:'髪のことは、信頼できる一人にだけ任せたい',pair:'BF_C',menu:'低刺激の薬剤を使う施術',care:'ダメージ補修のトリートメント',
+    fx:{color:'#B21F38',center:'#F0C64A',cr:9,layers:[{n:5,rx:15,ry:16,d:14,op:1}]}},
+};
+const ORDER = ['NF_A','NF_C','NR_A','NR_C','BF_A','BF_C','BR_A','BR_C'];
+
+function flowerSVG(fx){
+  let s = '<svg viewBox="-50 -50 100 100" aria-hidden="true">';
+  fx.layers.forEach(L=>{
+    for(let i=0;i<L.n;i++){
+      const a = (360/L.n)*i + (L.rot||0);
+      s += `<ellipse cx="0" cy="${-L.d}" rx="${L.rx}" ry="${L.ry}" fill="${fx.color}" fill-opacity="${L.op}" transform="rotate(${a})"/>`;
+    }
+  });
+  return s + `<circle r="${fx.cr}" fill="${fx.center}"/></svg>`;
+}
+
+/* ---------- icons ---------- */
+function wavePath(amp){
+  let d='';
+  [7,12,17].forEach(x=>{ d+=`M${x} 2.5`; for(let i=0;i<4;i++) d+=` q ${i%2?-amp:amp} 2.4 0 4.8`; });
+  return d;
+}
+const P = {
+  sparkle:'M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6',
+  moon:'M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z',
+  bottle:'M9 3h6M10 3v4l-3 4v9a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-9l-3-4V3M7 14h10',
+  leaf:'M5 20c0-9 6-15 15-15 0 9-6 15-15 15zM5 20l8-8',
+  drop:'M12 3c4 5 6 8 6 11a6 6 0 0 1-12 0c0-3 2-6 6-11zM9.5 14.5a2.5 2.5 0 0 0 2.5 2.5',
+  none:'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM6 18L18 6',
+  shield:'M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6l7-3zM9 12l2 2 4-4',
+  both:'M6 3v18M11 3v18M18 4v6M15 7h6',
+};
+const ico = (d,cls='ico') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="${d}"/></svg>`;
+function lenSVG(yEnd){
+  const w = Math.min(4,(yEnd-26)/12);
+  return `<svg class="len" viewBox="0 0 60 80" aria-hidden="true">
+    <path d="M6 79 Q8 56 30 54 Q52 56 54 79" fill="var(--soft)" stroke="var(--line)"/>
+    <path d="M18 20 Q18 6 30 6 Q42 6 42 20 L${44+w} ${yEnd} L${16-w} ${yEnd} Z" fill="var(--hair)"/>
+    <rect x="26" y="30" width="8" height="10" fill="var(--skin)"/>
+    <ellipse cx="30" cy="22" rx="9.5" ry="11" fill="var(--skin)"/>
+    <path d="M20.5 18 Q24 9 39.5 15" fill="none" stroke="var(--hair)" stroke-width="4" stroke-linecap="round"/>
+  </svg>`;
+}
+
+/* ---------- questions ---------- */
+const LENS = [
+  {label:'あごより上',sub:'ショート',v:12,y:26},
+  {label:'あご下〜鎖骨',sub:'ボブ',v:22,y:44},
+  {label:'鎖骨下〜胸の上',sub:'ミディアム',v:35,y:60},
+  {label:'胸より下',sub:'ロング',v:50,y:76},
+];
+const ITEMS = [
+  {key:'bleach',label:'ブリーチ',sub:'ハイトーン',icon:P.sparkle,color:true},
+  {key:'black',label:'黒染め',sub:'暗く染め直し',icon:P.moon,color:true},
+  {key:'self',label:'市販カラー',sub:'白髪染めも',icon:P.bottle,color:true},
+  {key:'straight',label:'縮毛矯正',sub:'ストレートも',icon:wavePath(0)},
+  {key:'henna',label:'ヘナ',sub:'ハーブカラー',icon:P.leaf,color:true},
+  {key:'acid',label:'酸熱トリートメント',sub:'髪質改善',icon:P.drop},
+  {key:'perm',label:'パーマ',sub:'デジパーも',icon:wavePath(3.5)},
+];
+const WHEN = [{label:'半年以内',m:4},{label:'1〜2年前',m:18},{label:'もっと前',m:36}];
+const whenLabel = m => (WHEN.find(w=>w.m===m)||{label:'—'}).label;
+
+/* axis: change (+ = 冒険派), care (+ = こまめ派), order (+ = おまかせ派) */
+const STATEMENTS = [
+  {t:'美容院に行くたびに、なにか新しいことを試したくなる',ax:'change',dir:1},
+  {t:'気に入った髪型があれば、何年でも同じでいたい',ax:'change',dir:-1},
+  {t:'SNSで見た髪型を、そのまま美容師に見せたことがある',ax:'change',dir:1},
+  {t:'朝のスタイリングに時間をかけるのは苦にならない',ax:'care',dir:1},
+  {t:'家でのヘアケアは、正直シャンプーだけで済ませたい',ax:'care',dir:-1},
+  {t:'トリートメントやオイルを、自分で選んで使い分けている',ax:'care',dir:1},
+  {t:'美容院では「おまかせで」と言うことが多い',ax:'order',dir:1},
+  {t:'仕上がりのイメージは、自分の中ではっきり決まっている',ax:'order',dir:-1},
+  {t:'美容師の提案で、思い切って変えてよかったことがある',ax:'order',dir:1},
+];
+const AXES = {
+  change:{k:'変化',pos:'冒険派',neg:'キープ派'},
+  care:{k:'ヘアケア',pos:'こまめ派',neg:'ラクちん派'},
+  order:{k:'オーダー',pos:'おまかせ派',neg:'こだわり派'},
+};
+const SCALE = [3,2,1,0,-1,-2,-3];
+
+const STEPS = [
+  {id:'len',part:1,title:'今の髪の長さは？',hint:'一番長いところで選んでください。'},
+  {id:'items',part:1,title:'この髪に、したことがあるものは？',hint:'あてはまるものを全部タップ。なければ「どれもない」。'},
+  {id:'when',part:1,title:'それぞれ、だいたいいつ頃？',hint:'うろ覚えで大丈夫です。',skip:()=>!answers.items.length},
+  {id:'kuse',part:1,title:'何もしないときの髪は？',hint:''},
+  {id:'lk0',part:2,lk:[0,1,2],title:'あなたにあてはまる？',hint:'直感で答えてください。迷ったら真ん中で大丈夫です。'},
+  {id:'lk1',part:2,lk:[3,4,5],title:'あなたにあてはまる？',hint:''},
+  {id:'lk2',part:2,lk:[6,7,8],title:'あなたにあてはまる？',hint:''},
+];
+const SAMPLE = {len:35,items:['self','straight','acid'],when:{self:18,straight:4,acid:4},kuse:4,lk:[-1,2,0,-1,2,-2,1,-1,2]};
+
+let answers, si = 0, profile = null, verified = false, isSample = false;
+const $ = id => document.getElementById(id);
+const freshAnswers = () => ({len:null,items:[],when:{},kuse:null,lk:Array(STATEMENTS.length).fill(null)});
+
+function show(id){
+  ['s-intro','s-quiz','s-result','s-route','s-story','s-show'].forEach(s=>$(s).hidden = (s!==id));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ---------- quiz ---------- */
+const activeSteps = () => STEPS.filter(s=>!(s.skip && s.skip()));
+function tile({label,sub,inner,pressed,onclick,id}){
+  const b = document.createElement('button');
+  b.className='tile'; if(id) b.id=id;
+  if(pressed!==undefined) b.setAttribute('aria-pressed',String(pressed));
+  b.innerHTML = `${inner||''}<span class="tl">${label}</span>${sub?`<small>${sub}</small>`:''}`;
+  b.onclick = onclick;
+  return b;
+}
+function progress(){
+  const steps = activeSteps();
+  const pct = Math.round(si/steps.length*100);
+  $('pbar').style.width = pct+'%';
+  $('pct-label').textContent = pct+'%';
+  const part = steps[si].part;
+  $('part-label').innerHTML = part===1 ? '<b>パート1</b> 髪の履歴' : '<b>パート2</b> 髪との付き合い方';
+}
+function renderStep(){
+  const step = activeSteps()[si];
+  progress();
+  $('q-text').textContent = step.title;
+  $('q-hint').textContent = step.hint; $('q-hint').hidden = !step.hint;
+  const body = $('q-body'); body.innerHTML=''; body.className='';
+  $('q-next-wrap').hidden = true; $('btn-next').disabled = false;
+
+  if(step.id==='len'){
+    body.className='tiles four';
+    LENS.forEach((l,i)=>body.appendChild(tile({id:`len-${i}`,label:l.label,sub:l.sub,inner:lenSVG(l.y),pressed:answers.len===l.v,onclick:()=>{answers.len=l.v; advance();}})));
+  }
+  if(step.id==='items'){
+    body.className='tiles four';
+    ITEMS.forEach(it=>{
+      const on = answers.items.includes(it.key);
+      body.appendChild(tile({id:`item-${it.key}`,label:it.label,sub:it.sub,inner:ico(it.icon),pressed:on,onclick:()=>{
+        const a=answers.items, i=a.indexOf(it.key);
+        if(i>=0){ a.splice(i,1); delete answers.when[it.key]; } else a.push(it.key);
+        renderStep();
+      }}));
+    });
+    body.appendChild(tile({id:'item-none',label:'どれもない',sub:'まっさらな髪',inner:ico(P.none),pressed:false,onclick:()=>{answers.items=[];answers.when={};advance();}}));
+    $('q-next-wrap').hidden = !answers.items.length;
+    $('btn-next').textContent = `次へ（${answers.items.length}つ選択中）`;
+  }
+  if(step.id==='when'){
+    body.className='when';
+    answers.items.forEach(k=>{
+      const it = ITEMS.find(x=>x.key===k);
+      const row = document.createElement('div'); row.className='when-row';
+      row.innerHTML = `<span class="wl">${ico(it.icon)}${it.label}</span>`;
+      const seg = document.createElement('div'); seg.className='seg';
+      WHEN.forEach((w,i)=>{
+        const b=document.createElement('button'); b.id=`when-${k}-${i}`;
+        b.textContent=w.label; b.setAttribute('aria-pressed',String(answers.when[k]===w.m));
+        b.onclick=()=>{ answers.when[k]=w.m; renderStep(); };
+        seg.appendChild(b);
+      });
+      row.appendChild(seg); body.appendChild(row);
+    });
+    const left = answers.items.filter(k=>answers.when[k]===undefined).length;
+    $('q-next-wrap').hidden = false;
+    $('btn-next').disabled = left>0;
+    $('btn-next').textContent = left ? `あと${left}つ選んでください` : '次へ';
+  }
+  if(step.id==='kuse'){
+    body.className='tiles four';
+    [{l:'まっすぐ',a:0,v:1},{l:'少しうねる',a:1.4,v:2},{l:'うねる・広がる',a:2.8,v:3},{l:'強いクセ',a:4.2,v:4}].forEach((o,i)=>
+      body.appendChild(tile({id:`kuse-${i}`,label:o.l,inner:ico(wavePath(o.a)),pressed:answers.kuse===o.v,onclick:()=>{answers.kuse=o.v; advance();}})));
+  }
+  if(step.lk){
+    body.className='lk-list';
+    step.lk.forEach(qi=>{
+      const S = STATEMENTS[qi];
+      const blk = document.createElement('div');
+      blk.className = 'lk' + (answers.lk[qi]!==null?' done':'');
+      blk.id = `lk-${qi}`;
+      blk.innerHTML = `<p class="stmt">${S.t}</p>`;
+      const scale = document.createElement('div'); scale.className='scale';
+      scale.innerHTML = `<span class="end a">そう思う</span>`;
+      const circles = document.createElement('div'); circles.className='circles'; circles.setAttribute('role','group'); circles.setAttribute('aria-label',S.t);
+      SCALE.forEach((v,i)=>{
+        const b = document.createElement('button');
+        const side = v>0?'a':v<0?'d':'n';
+        b.className = `${side} s${Math.abs(v)}`;
+        b.id = `lk-${qi}-${i}`;
+        b.setAttribute('aria-label', ['とてもそう思う','そう思う','少しそう思う','どちらでもない','あまり思わない','そう思わない','まったく思わない'][i]);
+        b.setAttribute('aria-pressed', String(answers.lk[qi]===v));
+        b.onclick = ()=>{
+          answers.lk[qi] = v;
+          circles.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+          blk.classList.add('done');
+          const nextQ = step.lk.find(q=>answers.lk[q]===null);
+          if(nextQ!==undefined){
+            const el = $(`lk-${nextQ}`);
+            if(el) el.scrollIntoView({behavior:'smooth',block:'center'});
+          }
+          updateLkNext(step);
+        };
+        circles.appendChild(b);
+      });
+      scale.appendChild(circles);
+      scale.insertAdjacentHTML('beforeend',`<span class="end d">そう思わない</span>`);
+      blk.appendChild(scale);
+      body.appendChild(blk);
+    });
+    $('q-next-wrap').hidden = false;
+    updateLkNext(step);
+  }
+}
+function updateLkNext(step){
+  const left = step.lk.filter(q=>answers.lk[q]===null).length;
+  const last = activeSteps()[activeSteps().length-1].id===step.id;
+  $('btn-next').disabled = left>0;
+  $('btn-next').textContent = left ? `あと${left}問` : (last ? '結果を見る' : '次へ');
+}
+function animate(){ const p=$('q-panel'); p.classList.remove('fade'); void p.offsetWidth; p.classList.add('fade'); }
+function advance(){
+  const curId = activeSteps()[si].id;
+  const next = activeSteps();
+  const idx = next.findIndex(s=>s.id===curId);
+  if(idx < next.length-1){ si = idx+1; renderStep(); animate(); window.scrollTo({top:0,behavior:'smooth'}); }
+  else finish();
+}
+$('btn-next').onclick = advance;
+$('btn-back').onclick = ()=>{ if(si>0){ si--; renderStep(); animate(); } else show('s-intro'); };
+
+/* ---------- scoring ---------- */
+const remains = (m,len) => typeof m==='number' && m < len;
+function axisScores(lk){
+  const out = {};
+  Object.keys(AXES).forEach(ax=>{
+    const qs = STATEMENTS.map((s,i)=>({s,i})).filter(o=>o.s.ax===ax);
+    const sum = qs.reduce((acc,o)=>acc + (lk[o.i]||0)*o.s.dir, 0);
+    const posPct = Math.round(50 + sum/(3*qs.length)*50);
+    out[ax] = {posPct, pos: posPct>=50};
+  });
+  return out;
+}
+function buildProfile(a){
+  const len = a.len, w = a.when, has = k => a.items.includes(k);
+  const r = {}; ITEMS.forEach(it=> r[it.key] = has(it.key) && remains(w[it.key], len));
+  const ax = axisScores(a.lk);
+  const c = ITEMS.some(it=>it.color && r[it.key]) ? 'B':'N';
+  const s = r.straight ? 'R':'F';
+  const style = ax.change.posPct > 50 ? 'A':'C';
+  const key = `${c}${s}_${style}`;
+  const code = `${c}${s}${style}-${ax.care.pos?'M':'E'}`;
+  const careLv = ax.care.posPct>=67?3:ax.care.posPct>=40?2:1;
+  const colorMonths = ITEMS.filter(it=>it.color && r[it.key]).map(it=>w[it.key]);
+  let risk = 1;
+  if(r.bleach) risk += 2;
+  if(r.henna) risk += 2;
+  if(r.black) risk += 1;
+  if(r.self) risk += 1;
+  if(r.straight) risk += 1;
+  if(r.acid) risk += 1;
+  if(r.perm) risk += 1;
+  if(c==='B' && s==='R') risk += 1;
+  risk = Math.min(5,risk);
+  const tell = [];
+  if(r.henna) tell.push('ヘナ・ハーブカラー。ブリーチや縮毛矯正の薬剤が効きにくく、思わぬ色が出ることがあります');
+  if(r.black) tell.push('黒染め。明るくするときに色が抜けにくい原因になります');
+  if(r.self) tell.push('市販のカラー。薬剤の反応が読みにくくなります');
+  if(r.bleach) tell.push('ブリーチ。毛先の強度を確認してから施術します');
+  if(r.straight) tell.push('縮毛矯正。矯正部分に薬剤を重ねるとダメージが大きくなります');
+  if(r.acid) tell.push('酸熱・髪質改善トリートメント。縮毛矯正で髪が硬くなることがあります');
+  if(r.perm) tell.push('パーマ。縮毛矯正と重ねると負担が大きくなります');
+  if(s==='F' && a.kuse>=3) tell.push('クセが強めです。矯正デビューの相談もしやすいタイミングです');
+  if(!tell.length) tell.push('今の髪に残っている施術履歴はありません');
+  return {a,len,c,s,style,key,code,ax,careLv,r,risk,tell,
+    colorMonths: colorMonths.length ? Math.min(...colorMonths) : null,
+    straightMonths: r.straight ? w.straight : null};
+}
+
+/* ---------- result ---------- */
+function traitHTML(axKey, sc){
+  const A = AXES[axKey];
+  const dom = sc.pos ? A.pos : A.neg;
+  const pct = sc.pos ? sc.posPct : 100-sc.posPct;
+  const knob = 100 - sc.posPct; /* left end = pos label */
+  const fill = sc.pos ? `left:0;width:${knob}%` : `left:${knob}%;right:0`;
+  return `<div class="trait">
+    <div class="tk">${A.k}</div>
+    <div class="tv"><span>${pct}%</span> ${dom}</div>
+    <div class="track"><span class="fill" style="${fill}"></span><span class="knob" style="left:${knob}%"></span></div>
+    <div class="ends"><span>${A.pos}</span><span>${A.neg}</span></div>
+  </div>`;
+}
+function renderResult(p){
+  const T = TYPES[p.key], G = GARDENS[p.c+p.s], Pr = TYPES[T.pair];
+  const el = $('res');
+  el.style.setProperty('--c', T.fx.color);
+  el.style.setProperty('--g', G.color);
+  const match = p.ax.order.pos
+    ? '提案上手な美容師と相性◎。「似合うもの」から一緒に考えてくれる人を選ぶと、想像以上の髪に出会えます。'
+    : '写真を見ながら細かくすり合わせてくれる美容師と相性◎。イメージ画像を2〜3枚用意して行くと伝わりやすくなります。';
+  el.innerHTML = `
+    <div class="res-top">
+      <div class="who">あなたの髪は</div>
+      ${flowerSVG(T.fx)}
+      <div class="name">${T.name}</div>
+      <div class="code">${p.code}</div>
+      <span class="gpill"><i></i>${G.name}</span>
+      <p class="oneline">${T.line}</p>
+    </div>
+    <div class="res-body">
+      <div class="traits">
+        ${traitHTML('change',p.ax.change)}
+        ${traitHTML('care',p.ax.care)}
+        ${traitHTML('order',p.ax.order)}
+      </div>
+      <div class="aru"><div class="k">${T.name}タイプのあるある</div><p>${T.aru}</p></div>
+      <div class="stack" style="gap:4px"><h3>美容師との相性</h3><p style="font-size:14px">${match}</p></div>
+      <div class="pair">${flowerSVG(Pr.fx)}<span>一緒に美容院に行くと楽しい花：<b>${Pr.name}</b></span></div>
+      <div class="sign"><span>#髪の花タイプ診断</span><span>${G.name}</span></div>
+    </div>`;
+}
+
+function renderStory(p){
+  const T = TYPES[p.key], G = GARDENS[p.c+p.s];
+  const el = $('story');
+  el.style.setProperty('--c', T.fx.color);
+  el.style.setProperty('--g', G.color);
+  const bar = ax => {
+    const sc = p.ax[ax], A = AXES[ax];
+    const pct = sc.pos ? sc.posPct : 100-sc.posPct;
+    const fill = sc.pos ? `left:0;width:${pct}%` : `right:0;width:${pct}%`;
+    return `<div class="sbar"><div class="top"><span>${A.pos}</span><b>${pct}% ${sc.pos?A.pos:A.neg}</b><span>${A.neg}</span></div><div class="strack"><span style="${fill}"></span></div></div>`;
+  };
+  el.innerHTML = `
+    <div>
+      <div class="sb">髪の花タイプ診断</div>
+    </div>
+    <div>
+      <div class="sw">わたしの髪は</div>
+      ${flowerSVG(T.fx).replace('<svg ','<svg class="sf" ')}
+      <div class="sn">${T.name}</div>
+      <div class="sc">${p.code}</div>
+      <span class="sg"><i></i>${G.name}</span>
+      <p class="sl">${T.line}</p>
+    </div>
+    <div class="sbars">${bar('change')}${bar('care')}${bar('order')}</div>
+    <div class="saru"><small>${T.name}タイプのあるある</small>${T.aru}</div>
+    <div class="sfoot"><b>#髪の花タイプ診断</b><span>あなたは何の花？</span></div>`;
+}
+
+function dots(n,max){ let s='<span class="dots">'; for(let i=1;i<=max;i++) s+=`<i class="${i<=n?'on':''}"></i>`; return s+'</span>'; }
+function renderNote(p){
+  const T = TYPES[p.key], a = p.a, r = p.r;
+  const note = $('note');
+  note.style.setProperty('--c', T.fx.color);
+  $('stamp-sum').textContent = verified ? '確認済み' : '未確認';
+  $('stamp-sum').className = 'stamp' + (verified?' ok':'');
+  const lenL = LENS.find(l=>l.v===a.len);
+  const rows = a.items.length
+    ? a.items.map(k=>{ const it=ITEMS.find(x=>x.key===k); const on=r[k];
+        return `<tr><th>${it.label}</th><td>${whenLabel(a.when[k])}<span class="st ${on?'on':'off'}">${on?'残っている可能性':'切れている見込み'}</span></td></tr>`; }).join('')
+    : `<tr><th>施術履歴</th><td>なし（まっさらな髪）</td></tr>`;
+  const kuseLabel = ['','まっすぐ','少し','うねる','強い'][a.kuse];
+  const careLabel = ['','ラク','ふつう','こまめ'][p.careLv];
+  note.innerHTML = `
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <span class="fine">${T.name}（${p.code}）・長さ：${lenL.label}</span>
+      <span class="stamp ${verified?'ok':''}">${verified?'美容師確認済み':'自己申告・未確認'}</span>
+    </div>
+    <table class="hist">${rows}</table>
+    <div class="meters">
+      <div class="meter"><span>施術リスク</span>${dots(p.risk,5)}<span class="v">${p.risk}/5</span></div>
+      <div class="meter"><span>クセ度</span>${dots(a.kuse,4)}<span class="v">${kuseLabel}</span></div>
+      <div class="meter"><span>ケア度</span>${dots(p.careLv,3)}<span class="v">${careLabel}</span></div>
+    </div>
+    <div class="tell"><h3>美容師に必ず伝えること</h3><ul>${p.tell.map(t=>`<li>${t}</li>`).join('')}</ul></div>
+    ${verified?`<div class="stylist"><b>美容師の追記</b>（たいが<span class="sample">掲載例</span>）<br>毛先に、申告になかった明るい色の履歴を確認しました。次回のカラーは毛先の色の抜け方を見てから薬剤を決めます。</div>`:''}
+    <dl class="kv"><dt>相性のいいメニュー</dt><dd>${T.menu}</dd><dt>ホームケア</dt><dd>${T.care}</dd><dt>オーダーの傾向</dt><dd>${p.ax.order.pos?'おまかせ派':'こだわり派'}（${p.ax.order.pos?p.ax.order.posPct:100-p.ax.order.posPct}%）</dd></dl>
+    <div class="row">
+      <button class="primary small" id="btn-save">LINEの手帳に保存</button>
+      <button class="small" id="btn-verify">${verified?'自己申告の表示に戻す':'美容師が確認した場合の表示'}</button>
+    </div>
+    <p class="fine">${verified?'美容師が髪を見て確認・追記した記録です。':'お客様の自己申告による仮の記録です。美容院で美容師が確認・追記すると「確認済み」になります。'}リスクは目安で、最終判断は美容師のカウンセリングで行います。</p>`;
+  $('btn-save').onclick = ()=> toast('試作版のため保存はされません。本番ではLINEの手帳に保存されます');
+  $('btn-verify').onclick = ()=>{ verified=!verified; renderNote(profile); };
+}
+
+/* ---------- goals ---------- */
+const GOALS = [
+  {id:'tone',short:'明るくしたい',label:'ハイトーン・明るい色にしたい',icon:P.sparkle,c:'B',s:null},
+  {id:'natural',short:'地毛に戻したい',label:'色の履歴をなくして、地毛に戻したい',icon:P.leaf,c:'N',s:null},
+  {id:'straight',short:'クセを伸ばしたい',label:'縮毛矯正で、クセを伸ばしたい',icon:wavePath(0),c:null,s:'R'},
+  {id:'graduate',short:'矯正をやめたい',label:'縮毛矯正をやめて、自然なクセを活かしたい',icon:wavePath(2.8),c:null,s:'F'},
+  {id:'both',short:'明るさもストレートも',label:'明るい色も、まっすぐな髪も楽しみたい',icon:P.both,c:'B',s:'R'},
+  {id:'keep',short:'今の髪をキープ',label:'今の髪を、いい状態でキープしたい',icon:P.shield,c:null,s:null},
+];
+function goalTarget(p,g){ return {c1:g.c||p.c, s1:g.s||p.s}; }
+function renderGoals(){
+  const box = $('goals'); box.innerHTML = '';
+  const seen = new Set();
+  GOALS.forEach(g=>{
+    const {c1,s1} = goalTarget(profile,g);
+    const k = c1+s1, same = (c1===profile.c && s1===profile.s);
+    if(g.id!=='keep' && (same || seen.has(k))) return;
+    seen.add(k);
+    const T = TYPES[`${c1}${s1}_${profile.style}`];
+    const b = tile({id:`goal-${g.id}`,label:g.short,inner:ico(g.icon),onclick:()=>{ renderRoute(g); show('s-route'); }});
+    b.insertAdjacentHTML('beforeend',`<span class="to">→ ${flowerSVG(T.fx)}${T.name}</span>`);
+    box.appendChild(b);
+  });
+}
+
+function saveText(p){
+  const T = TYPES[p.key], G = GARDENS[p.c+p.s], lenL = LENS.find(l=>l.v===p.a.len);
+  const hist = p.a.items.length
+    ? p.a.items.map(k=>`${ITEMS.find(x=>x.key===k).label}(${whenLabel(p.a.when[k])})`).join('／')
+    : 'なし';
+  const kuse = ['','まっすぐ','少しうねる','うねる・広がる','強い'][p.a.kuse];
+  return `手帳に保存\n【${T.name}】${p.code}\n${G.name}\n長さ：${lenL.label}\n履歴：${hist}\nクセ：${kuse}\n施術リスク：${p.risk}/5\nオーダー：${p.ax.order.pos?'おまかせ派':'こだわり派'}` + (LINK_WORKS ? `\n\n美容師に見せる画面：\n${PAGE_URL}#m=${encodeNote(p.a)}` : '');
+}
+function setupLine(p){
+  const text = saveText(p);
+  $('save-preview').textContent = text;
+  const f = $('a-friend'), s = $('a-send');
+  f.href = FRIEND_URL || '#';
+  s.href = LINE_ID ? `https://line.me/R/oaMessage/${encodeURIComponent(LINE_ID)}/?${encodeURIComponent(text)}` : '#';
+  f.onclick = e=>{ if(!FRIEND_URL){ e.preventDefault(); toast('試作版：LINEアカウントを作ったら、ここに友だち追加URLを設定します'); } };
+  s.onclick = e=>{ if(!LINE_ID){ e.preventDefault(); toast('試作版：LINE IDを設定すると、この結果が入力済みの状態でLINEが開きます'); } };
+}
+
+function finish(){
+  profile = buildProfile(answers);
+  verified = false;
+  if(!isSample){ saveLocal(answers); refreshBanner(); }
+  isSample = false;
+  setupLine(profile);
+  renderResult(profile);
+  renderStory(profile);
+  renderNote(profile);
+  renderGoals();
+  $('notebook').open = false;
+  show('s-result');
+}
+
+/* ---------- route ---------- */
+function buildRoute(p, g){
+  const {c1,s1} = goalTarget(p,g);
+  const steps = [], cautions = [];
+  let months = 0;
+  if(p.c==='B' && c1==='N'){
+    const m = Math.max(1, p.len - (p.colorMonths ?? 0));
+    months = Math.max(months, m);
+    steps.push({t:'色の履歴を卒業する',d:`カラー部分は毛先に残っています。今の長さを保つなら、切り終わるまで約${m}か月。短くすれば早く卒業できます。`,lv:3});
+    if(p.r.black) cautions.push('黒染めした部分は、途中で明るくしたくなったときに色が抜けにくくなります。');
+  }
+  if(p.s==='R' && s1==='F'){
+    const m = Math.max(1, p.len - (p.straightMonths ?? 0));
+    months = Math.max(months, m);
+    steps.push({t:'縮毛矯正を卒業する',d:`矯正部分を少しずつカットしながら伸ばします。目安は約${m}か月。途中の「境目のうねり」は、前髪や顔まわりだけの部分矯正でつなぐ方法もあります。`,lv:3});
+  }
+  if(p.s==='F' && s1==='R'){
+    if(p.c==='B') steps.push({t:'縮毛矯正をはじめる',d:'カラー履歴のある髪への縮毛矯正は、薬剤の強さとアイロンの温度を抑えて行います。履歴を正確に伝えることが一番大切です。',lv:4});
+    else steps.push({t:'縮毛矯正デビュー',d:'クセの出方に合わせて、全体か、前髪・顔まわりの部分矯正から始められます。',lv:2});
+    if(p.r.perm) cautions.push('パーマの部分に縮毛矯正を重ねると、ダメージが大きくなります。パーマ部分は切ってからが安全です。');
+  }
+  if(p.c==='N' && c1==='B'){
+    if(s1==='R'){
+      steps.push({t:'矯正毛を明るくする',d:'縮毛矯正の部分にブリーチをすると、切れ毛のリスクが高くなります。明るさに上限を決めるか、矯正していない根元から少しずつ明るくする方法を相談してください。',lv:5});
+      cautions.push('縮毛矯正とブリーチを同じ日に行うのは避けましょう。');
+    }else{
+      steps.push({t:'はじめてのハイトーン',d:'毛先までのダメージを見ながら、何回かに分けて明るくします。色落ちを防ぐホームケアも一緒に始めます。',lv:2});
+    }
+  }
+  if(!steps.length){
+    let d = '2〜3か月ごとのカットで、形と状態をキープします。';
+    if(p.s==='R') d = '根元の縮毛矯正リタッチは3〜6か月が目安です。毛先には重ねず、根元の伸びた部分だけを施術します。';
+    else if(p.c==='B') d = '根元のリタッチと、色落ちを防ぐホームケアで状態を保ちます。';
+    steps.push({t:'今の髪を守る',d,lv:1});
+    if(p.style==='A') steps.push({t:'次の変化を計画する',d:'今の状態を保ちながら、次に挑戦したいデザインを美容師と決めておきます。',lv:1});
+  }
+  const addsColor = c1==='B' && (g.id==='tone' || g.id==='both');
+  if(p.r.henna && (addsColor || s1==='R')) cautions.push('ヘナの履歴があります。ブリーチや縮毛矯正の前に必ず伝えてください。薬剤が効きにくかったり、思わぬ色が出ることがあります。');
+  if(p.r.acid && s1==='R') cautions.push('酸熱トリートメントの履歴があると、縮毛矯正で髪が硬くなることがあります。');
+  if(p.c==='B' && p.s==='R' && c1==='B' && s1==='R') cautions.push('色と矯正の両方の履歴があります。毎回の施術前に、前回の内容を手帳で見せてください。');
+  if(!p.ax.order.pos && (steps.some(s=>s.lv>=3))) cautions.push('こだわり派のあなたへ：時間のかかるルートなので、途中経過のイメージ写真も美容師と共有しておくと安心です。');
+  let diff = Math.max(...steps.map(s=>s.lv));
+  if(steps.filter(s=>s.lv>=2).length>=2) diff += 1;
+  if(p.r.henna && (addsColor || (p.s==='F' && s1==='R'))) diff += 1;
+  diff = Math.min(5, diff);
+  return {steps,cautions,diff,months,c1,s1,involvesR:p.s==='R'||s1==='R',involvesB:p.c==='B'||c1==='B'};
+}
+function stars(n){ let s=''; for(let i=1;i<=5;i++) s += i<=n ? '★' : '<span class="off">★</span>'; return s; }
+
+function renderRoute(g){
+  const p = profile, from = TYPES[p.key];
+  const R = buildRoute(p, g);
+  const to = TYPES[`${R.c1}${R.s1}_${p.style}`];
+  const period = R.months ? `約${R.months}か月` : 'すぐ始められる';
+  const tags = [];
+  if(R.involvesR) tags.push('縮毛矯正','矯正デビュー・卒業');
+  if(R.involvesB) tags.push('ハイトーン','カラー履歴のある髪');
+  if(!tags.length) tags.push('デザインカット');
+  const proCard = R.involvesR
+    ? `<div class="pro"><div class="avatar">た</div><div class="meta"><b>たいが</b><span class="sample">掲載例</span><div class="fine">名古屋・栄 ｜ 縮毛矯正、矯正卒業ルート、レイヤーカット</div><div class="fine">このルートの手帳記録：記録が貯まると件数が表示されます</div></div></div>`
+    : `<div class="pro"><div class="avatar">＋</div><div class="meta"><b>このルートが得意な美容師</b><span class="sample">募集中</span><div class="fine">手帳への記録が貯まると、得意ルートとして表示されます。</div></div></div>`;
+  $('route').innerHTML = `
+    <p class="goal-label">${g.label}</p>
+    <div class="fromto">
+      <div class="f">${flowerSVG(from.fx)}<span class="n">${from.name}</span><span class="fine">いま</span></div>
+      <div class="arrow" aria-hidden="true"></div>
+      <div class="f">${flowerSVG(to.fx)}<span class="n">${to.name}</span><span class="fine">目指す髪</span></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="k">難易度</div><div class="v stars" aria-label="難易度${R.diff}/5">${stars(R.diff)}</div></div>
+      <div class="stat"><div class="k">期間の目安</div><div class="v">${period}</div></div>
+    </div>
+    <div class="stack"><h3>道のり</h3>
+      <ol class="steps">${R.steps.map(s=>`<li><div><b>${s.t}${s.lv>=4?'<span class="lvl">要相談</span>':''}</b><span class="d">${s.d}</span></div></li>`).join('')}</ol>
+    </div>
+    ${R.cautions.length ? `<div class="tell"><h3>途中で気をつけること</h3><ul>${R.cautions.map(c=>`<li>${c}</li>`).join('')}</ul></div>`:''}
+    <div class="stack"><h3>このルートが得意な美容師</h3>
+      <div class="chips">${tags.map(t=>`<span class="chip">${t}</span>`).join('')}</div>
+      ${proCard}
+    </div>
+    <p class="fine">ルートは目安です。できる・できないの最終判断は、髪を見た美容師がカウンセリングで行います。</p>`;
+  window.__routeText = `【${g.label}】${from.name} → ${to.name}／難易度${R.diff}/5・${period}\n` + R.steps.map((s,i)=>`${i+1}. ${s.t}：${s.d}`).join('\n') + '\n#髪の花タイプ診断';
+}
+
+/* ---------- misc ---------- */
+let toastTimer;
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.hidden=false; clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.hidden=true,2600); }
+async function copy(text){
+  try{ await navigator.clipboard.writeText(text); toast('コピーしました'); }
+  catch(e){ toast('コピーできませんでした。画面の文字を長押しで選択してください'); }
+}
+function shareText(){
+  const p = profile, T = TYPES[p.key];
+  const tr = ax => { const sc=p.ax[ax], A=AXES[ax]; return `${sc.pos?A.pos:A.neg} ${sc.pos?sc.posPct:100-sc.posPct}%`; };
+  return `私の髪は「${T.name}」（${p.code}）でした\n${T.line}\n${tr('change')}／${tr('care')}／${tr('order')}\n#髪の花タイプ診断`;
+}
+function startQuiz(){ answers=freshAnswers(); si=0; renderStep(); show('s-quiz'); }
+$('btn-start').onclick = startQuiz;
+$('btn-retry').onclick = startQuiz;
+$('btn-sample').onclick = ()=>{ isSample=true; answers=JSON.parse(JSON.stringify(SAMPLE)); finish(); toast('サンプルの回答で表示しています'); };
+$('btn-copy').onclick = ()=> copy(shareText());
+$('btn-story').onclick = ()=> show('s-story');
+$('btn-story-back').onclick = ()=> show('s-result');$('btn-route-back').onclick = ()=> show('s-result');
+$('btn-route-copy').onclick = ()=> copy(window.__routeText||'');
+
+/* ---------- notebook storage & stylist view ---------- */
+function encodeNote(a){
+  const o = {l:a.len,i:a.items.map(k=>[k,a.when[k]||0]),k:a.kuse,q:a.lk,d:Date.now()};
+  return btoa(JSON.stringify(o)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function decodeNote(str){
+  try{
+    let b = str.replace(/-/g,'+').replace(/_/g,'/'); while(b.length%4) b+='=';
+    const o = JSON.parse(atob(b));
+    if(!LENS.some(l=>l.v===o.l) || !Array.isArray(o.i) || !Array.isArray(o.q) || o.q.length!==STATEMENTS.length) return null;
+    const a = {len:o.l,items:[],when:{},kuse:o.k||1,lk:o.q.map(v=>Number(v)||0),d:o.d||null};
+    o.i.forEach(([k,m])=>{ if(ITEMS.some(it=>it.key===k)){ a.items.push(k); a.when[k]=m; } });
+    return a;
+  }catch(e){ return null; }
+}
+function saveLocal(a){ try{ localStorage.setItem(STORE_KEY, encodeNote(a)); }catch(e){} }
+function loadLocal(){ try{ const v=localStorage.getItem(STORE_KEY); return v?decodeNote(v):null; }catch(e){ return null; } }
+
+function renderShow(p, savedAt){
+  const T = TYPES[p.key], G = GARDENS[p.c+p.s], a = p.a, r = p.r;
+  const el = $('show');
+  el.style.setProperty('--c', T.fx.color);
+  const lenL = LENS.find(l=>l.v===a.len);
+  const kuse = ['','まっすぐ','少しうねる','うねる・広がる','強いクセ'][a.kuse];
+  const rows = a.items.length
+    ? a.items.map(k=>{ const it=ITEMS.find(x=>x.key===k); const on=r[k];
+        return `<tr><th>${it.label}</th><td>${whenLabel(a.when[k])}<span class="st ${on?'on':'off'}">${on?'残っている可能性':'切れている見込み'}</span></td></tr>`; }).join('')
+    : `<tr><th>施術履歴</th><td>なし（まっさらな髪）</td></tr>`;
+  const when = savedAt ? new Date(savedAt) : null;
+  const dateTxt = when && !isNaN(when) ? `${when.getFullYear()}年${when.getMonth()+1}月${when.getDate()}日の記録` : '';
+  el.innerHTML = `
+    <div class="show-top">
+      ${flowerSVG(T.fx)}
+      <div>
+        <span class="show-for">美容師の方へ</span>
+        <div class="nm">${T.name}</div>
+        <div class="sub">${p.code} ・ ${G.name}</div>
+      </div>
+    </div>
+    <div class="show-body">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <span class="show-date">${dateTxt}</span>
+        <span class="stamp">自己申告・未確認</span>
+      </div>
+      <table class="hist">
+        <tr><th>長さ</th><td>${lenL.label}</td></tr>
+        <tr><th>クセ</th><td>${kuse}</td></tr>
+        ${rows}
+      </table>
+      <div class="meters">
+        <div class="meter"><span>施術リスク</span>${dots(p.risk,5)}<span class="v">${p.risk}/5</span></div>
+      </div>
+      <div class="tell"><h3>施術の前に確認してほしいこと</h3><ul>${p.tell.map(t=>`<li>${t}</li>`).join('')}</ul></div>
+      <dl class="kv"><dt>オーダーの傾向</dt><dd>${p.ax.order.pos?'おまかせ派（提案してほしい）':'こだわり派（イメージが決まっている）'}</dd></dl>
+      <p class="fine">お客様ご自身の申告による記録です。施術の前に、髪の状態を必ずご確認ください。</p>
+    </div>`;
+}
+function openShow(a){
+  answers = a; profile = buildProfile(a); verified = false;
+  setupLine(profile); renderResult(profile); renderStory(profile); renderNote(profile); renderGoals();
+  renderShow(profile, a.d);
+  $('btn-show-result').hidden = false;
+  show('s-show');
+}
+function showEmpty(){
+  const el = $('show'); el.style.removeProperty('--c');
+  el.innerHTML = `<div class="show-body">
+    <h2>この画面には、まだ手帳がありません</h2>
+    <p style="font-size:14px">LINEのトークにある「手帳に保存」から始まるメッセージの中のリンクを開くと、美容師に見せる画面が出ます。</p>
+    <p class="fine">まだ診断していない場合は、下の「もう一度診断」から始めてください。</p>
+  </div>`;
+  $('btn-show-result').hidden = true;
+  show('s-show');
+}
+$('btn-show-result').onclick = ()=> show('s-result');
+$('btn-show-retry').onclick = startQuiz;
+
+function route(){
+  const src = (location.hash||'') + '&' + (location.search||'').replace(/^\?/,'');
+  const m = src.match(/(?:^#|&|\?)m=([A-Za-z0-9_\-]+)/);
+  if(m){
+    const a = decodeNote(m[1]);
+    if(a){ try{ localStorage.setItem(STORE_KEY, m[1]); }catch(e){} openShow(a); return; }
+  }
+  if(/(?:^#|&)show\b/.test(src)){
+    const a = loadLocal();
+    if(a) openShow(a); else showEmpty();
+  }
+}
+
+(function intro(){
+  $('hero-flowers').innerHTML = ['NF_A','NR_C','BF_A','BR_C'].map(k=>flowerSVG(TYPES[k].fx)).join('');
+  const g = $('gardens');
+  Object.entries(GARDENS).forEach(([gk,G])=>{
+    const d = document.createElement('div');
+    d.className='garden'; d.style.setProperty('--g',G.color);
+    const fl = ['A','C'].map(st=>{ const T=TYPES[`${gk}_${st}`]; return `<span>${flowerSVG(T.fx)}${T.name}</span>`; }).join('');
+    d.innerHTML = `<div class="gn"><i></i>${G.name}</div><div class="gd">${G.desc}</div><div class="gf">${fl}</div>`;
+    g.appendChild(d);
+  });
+})();
+function refreshBanner(){
+  const a = loadLocal(), box = $('mynote');
+  if(!a){ box.hidden = true; return; }
+  const p = buildProfile(a), T = TYPES[p.key];
+  $('mynote-flower').innerHTML = flowerSVG(T.fx);
+  const d = a.d ? new Date(a.d) : null;
+  $('mynote-sub').textContent = `${T.name}（${p.code}）` + (d && !isNaN(d) ? `・${d.getMonth()+1}/${d.getDate()}の記録` : '');
+  $('btn-mynote').onclick = ()=> openShow(a);
+  box.hidden = false;
+}
+refreshBanner();
+route();
+window.addEventListener('hashchange', route);
+</script>
+
+</body>
+</html>

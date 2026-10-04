@@ -402,9 +402,9 @@ ol.steps .d{font-size:13.5px;color:var(--muted)}
       <b>美容師の記録</b>
       <div class="two">
         <label class="f">日付<input type="date" id="r-date" required></label>
-        <label class="f">サロン名<input type="text" id="r-salon" maxlength="20" placeholder="例）little×RINNE 栄"></label>
+        <label class="f">サロン名<input type="text" id="r-salon" maxlength="20" placeholder="サロン名"></label>
       </div>
-      <label class="f">美容師名<input type="text" id="r-name" maxlength="12" placeholder="例）たいが"></label>
+      <label class="f">美容師名<input type="text" id="r-name" maxlength="12" placeholder="お名前"></label>
       <div class="f" style="font-size:13px;color:var(--muted)">今日の施術（複数選べます）
         <div class="chipsel" id="r-menu"></div>
       </div>
@@ -848,7 +848,7 @@ function renderNote(p){
       <div class="meter"><span>ケア度</span>${dots(p.careLv,3)}<span class="v">${careLabel}</span></div>
     </div>
     <div class="tell"><h3>美容師に必ず伝えること</h3><ul>${p.tell.map(t=>`<li>${t}</li>`).join('')}</ul></div>
-    ${verified?`<div class="stylist"><b>美容師の追記</b>（たいが<span class="sample">掲載例</span>）<br>毛先に、申告になかった明るい色の履歴を確認しました。次回のカラーは毛先の色の抜け方を見てから薬剤を決めます。</div>`:''}
+    ${verified?`<div class="stylist"><b>美容師の追記</b>（<span class="sample">掲載例</span>）<br>毛先に、申告になかった明るい色の履歴を確認しました。次回のカラーは毛先の色の抜け方を見てから薬剤を決めます。</div>`:''}
     <dl class="kv"><dt>相性のいいメニュー</dt><dd>${T.menu}</dd><dt>ホームケア</dt><dd>${T.care}</dd><dt>オーダーの傾向</dt><dd>${p.ax.order.pos?'おまかせ派':'こだわり派'}（${p.ax.order.pos?p.ax.order.posPct:100-p.ax.order.posPct}%）</dd></dl>
     <div class="row">
       <button class="primary small" id="btn-save">LINEの手帳に保存</button>
@@ -975,7 +975,7 @@ function renderRoute(g){
   if(R.involvesB) tags.push('ハイトーン','カラー履歴のある髪');
   if(!tags.length) tags.push('デザインカット');
   const proCard = R.involvesR
-    ? `<div class="pro"><div class="avatar">た</div><div class="meta"><b>たいが</b><span class="sample">掲載例</span><div class="fine">名古屋・栄 ｜ 縮毛矯正、矯正卒業ルート、レイヤーカット</div><div class="fine">このルートの手帳記録：記録が貯まると件数が表示されます</div></div></div>`
+    ? `<div class="pro"><div class="avatar">＋</div><div class="meta"><b>このルートが得意な美容師</b><span class="sample">掲載例</span><div class="fine">縮毛矯正、矯正卒業ルート</div><div class="fine">このルートの手帳記録：記録が貯まると件数が表示されます</div></div></div>`
     : `<div class="pro"><div class="avatar">＋</div><div class="meta"><b>このルートが得意な美容師</b><span class="sample">募集中</span><div class="fine">手帳への記録が貯まると、得意ルートとして表示されます。</div></div></div>`;
   $('route').innerHTML = `
     <p class="goal-label">${g.label}</p>

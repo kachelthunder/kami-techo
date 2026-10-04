@@ -227,6 +227,25 @@ details.preview pre{margin:8px 0 0;padding:12px;border-radius:12px;background:va
 .show-body{padding:16px 20px 20px;display:flex;flex-direction:column;gap:16px}
 .show-body .hist{font-size:15px}
 .show-date{font-size:12px;color:var(--muted)}
+.records{display:flex;flex-direction:column;gap:10px}
+.records h3{font-size:15px}
+.rec{border-radius:14px;border:1.5px solid var(--line);padding:12px 14px;font-size:13.5px;display:flex;flex-direction:column;gap:4px}
+.rec.ok{border-color:var(--ok);background:var(--ok-bg)}
+.rec .rh{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.rec .rm{font-weight:700}
+.rec .rt{white-space:pre-wrap;word-break:break-word}
+.addrec{border-radius:16px;border:1.5px dashed var(--accent);padding:16px;display:flex;flex-direction:column;gap:12px;background:var(--surface)}
+.addrec label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.addrec input[type=text],.addrec input[type=date],.addrec textarea{font:inherit;font-size:15px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
+.addrec textarea{min-height:76px;resize:vertical}
+.addrec .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:420px){.addrec .two{grid-template-columns:1fr}}
+.chipsel{display:flex;flex-wrap:wrap;gap:6px}
+.chipsel button{padding:7px 12px;font-size:13px;border-radius:999px}
+.chipsel button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.chk{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--ink)}
+.chk input{width:20px;height:20px;margin-top:3px;accent-color:var(--accent);flex:none}
+.sendbox{border-radius:16px;padding:16px;background:var(--accent-soft);border:1.5px solid var(--accent);display:flex;flex-direction:column;gap:10px}
 /* notebook */
 details.notebook{border-radius:18px;border:1px solid var(--line);background:var(--surface)}
 details.notebook summary{list-style:none;cursor:pointer;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px}
@@ -373,6 +392,30 @@ ol.steps .d{font-size:13.5px;color:var(--muted)}
   <!-- stylist view -->
   <section id="s-show" class="stack" hidden>
     <article class="show fade" id="show"></article>
+    <div class="sendbox" id="sendbox" hidden>
+      <b>記録を書き足しました</b>
+      <p style="font-size:14px">お客様のLINEにも保存しておくと、次の美容院でもこの記録を見せられます。</p>
+      <a class="btnlink primary-link" id="a-send-rec" href="#" target="_blank" rel="noopener"><span class="sn">✓</span>LINEの手帳にも保存する</a>
+    </div>
+    <button class="primary wide" id="btn-addrec" hidden>＋ 美容師が記録を書き足す</button>
+    <form class="addrec" id="addrec" hidden>
+      <b>美容師の記録</b>
+      <div class="two">
+        <label class="f">日付<input type="date" id="r-date" required></label>
+        <label class="f">サロン名<input type="text" id="r-salon" maxlength="20" placeholder="例）little×RINNE 栄"></label>
+      </div>
+      <label class="f">美容師名<input type="text" id="r-name" maxlength="12" placeholder="例）たいが"></label>
+      <div class="f" style="font-size:13px;color:var(--muted)">今日の施術（複数選べます）
+        <div class="chipsel" id="r-menu"></div>
+      </div>
+      <label class="f">薬剤・気づいたこと・次回のメモ<textarea id="r-text" maxlength="80" placeholder="例）毛先に明るい履歴あり。次回は根元のみリタッチ。"></textarea></label>
+      <label class="chk"><input type="checkbox" id="r-ok"><span>髪を見て、申告された履歴を確認しました</span></label>
+      <div class="row">
+        <button class="primary" type="submit">記録を保存</button>
+        <button type="button" class="ghost" id="r-cancel">やめる</button>
+      </div>
+      <p class="fine">記録はこのスマホと、お客様のLINEの手帳に残ります。</p>
+    </form>
     <div class="row">
       <button id="btn-show-result">自分の診断結果を見る</button>
       <button class="ghost" id="btn-show-retry">もう一度診断</button>
@@ -862,7 +905,7 @@ function setupLine(p){
 function finish(){
   profile = buildProfile(answers);
   verified = false;
-  if(!isSample){ saveLocal(answers); refreshBanner(); }
+  if(!isSample){ const prev=loadLocal(); answers.d=Date.now(); if(prev&&prev.rec&&prev.rec.length) answers.rec=prev.rec; saveLocal(answers); refreshBanner(); }
   isSample = false;
   setupLine(profile);
   renderResult(profile);
@@ -980,16 +1023,23 @@ $('btn-route-copy').onclick = ()=> copy(window.__routeText||'');
 
 /* ---------- notebook storage & stylist view ---------- */
 function encodeNote(a){
-  const o = {l:a.len,i:a.items.map(k=>[k,a.when[k]||0]),k:a.kuse,q:a.lk,d:Date.now()};
-  return btoa(JSON.stringify(o)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  const o = {l:a.len,i:a.items.map(k=>[k,a.when[k]||0]),k:a.kuse,q:a.lk,d:a.d||Date.now()};
+  if(a.rec && a.rec.length) o.r = a.rec.slice(-3);
+  const json = JSON.stringify(o);
+  const b = btoa(unescape(encodeURIComponent(json)));
+  return b.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 }
 function decodeNote(str){
   try{
     let b = str.replace(/-/g,'+').replace(/_/g,'/'); while(b.length%4) b+='=';
-    const o = JSON.parse(atob(b));
+    let raw = atob(b); try{ raw = decodeURIComponent(escape(raw)); }catch(e){}
+    const o = JSON.parse(raw);
     if(!LENS.some(l=>l.v===o.l) || !Array.isArray(o.i) || !Array.isArray(o.q) || o.q.length!==STATEMENTS.length) return null;
     const a = {len:o.l,items:[],when:{},kuse:o.k||1,lk:o.q.map(v=>Number(v)||0),d:o.d||null};
     o.i.forEach(([k,m])=>{ if(ITEMS.some(it=>it.key===k)){ a.items.push(k); a.when[k]=m; } });
+    a.rec = Array.isArray(o.r) ? o.r.filter(x=>x && typeof x==='object').map(x=>({
+      t:Number(x.t)||0, s:String(x.s||'').slice(0,20), n:String(x.n||'').slice(0,12),
+      m:Array.isArray(x.m)?x.m.map(String).slice(0,8):[], x:String(x.x||'').slice(0,80), v:!!x.v })) : [];
     return a;
   }catch(e){ return null; }
 }
@@ -1020,8 +1070,9 @@ function renderShow(p, savedAt){
     <div class="show-body">
       <div class="row" style="justify-content:space-between;align-items:center">
         <span class="show-date">${dateTxt}</span>
-        <span class="stamp">自己申告・未確認</span>
+        ${(()=>{ const v=(a.rec||[]).filter(r=>r.v).pop(); return v ? `<span class="stamp ok">美容師確認済み（${fmtDate(v.t)}）</span>` : `<span class="stamp">自己申告・未確認</span>`; })()}
       </div>
+      ${(a.rec&&a.rec.length) ? `<div class="records"><h3>美容師の記録</h3>${a.rec.slice().reverse().map(recHTML).join('')}</div>` : ''}
       <table class="hist">
         <tr><th>長さ</th><td>${lenL.label}</td></tr>
         <tr><th>クセ</th><td>${kuse}</td></tr>
@@ -1032,14 +1083,67 @@ function renderShow(p, savedAt){
       </div>
       <div class="tell"><h3>施術の前に確認してほしいこと</h3><ul>${p.tell.map(t=>`<li>${t}</li>`).join('')}</ul></div>
       <dl class="kv"><dt>オーダーの傾向</dt><dd>${p.ax.order.pos?'おまかせ派（提案してほしい）':'こだわり派（イメージが決まっている）'}</dd></dl>
-      <p class="fine">お客様ご自身の申告による記録です。施術の前に、髪の状態を必ずご確認ください。</p>
+      <p class="fine">${(a.rec&&a.rec.some(r=>r.v))?'履歴はお客様の申告に、美容師の確認と記録を加えたものです。':'お客様ご自身の申告による記録です。'}施術の前に、髪の状態を必ずご確認ください。</p>
     </div>`;
 }
+function fmtDate(t){ const d=new Date(t); return isNaN(d)?'':`${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`; }
+function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function recHTML(r){
+  const who = [r.s,r.n].filter(Boolean).map(esc).join(' ・ ');
+  return `<div class="rec ${r.v?'ok':''}">
+    <div class="rh"><span>${fmtDate(r.t)}${who?'　'+who:''}</span><span>${r.v?'履歴を確認済み':''}</span></div>
+    ${r.m.length?`<div class="rm">${r.m.map(esc).join('・')}</div>`:''}
+    ${r.x?`<div class="rt">${esc(r.x)}</div>`:''}
+  </div>`;
+}
+
+/* ---------- stylist adds a record ---------- */
+const REC_MENUS = ['カット','カラー','ブリーチ','縮毛矯正','パーマ','トリートメント','酸熱トリートメント','ヘッドスパ'];
+let recMenus = [];
+function openRecForm(){
+  const today = new Date(); const pad=n=>String(n).padStart(2,'0');
+  $('r-date').value = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
+  try{ $('r-salon').value = localStorage.getItem('kami-salon')||''; $('r-name').value = localStorage.getItem('kami-stylist')||''; }catch(e){}
+  $('r-text').value=''; $('r-ok').checked=false; recMenus=[];
+  const box=$('r-menu'); box.innerHTML='';
+  REC_MENUS.forEach(mn=>{ const b=document.createElement('button'); b.type='button'; b.textContent=mn; b.setAttribute('aria-pressed','false');
+    b.onclick=()=>{ const i=recMenus.indexOf(mn); if(i>=0) recMenus.splice(i,1); else recMenus.push(mn); b.setAttribute('aria-pressed',String(i<0)); };
+    box.appendChild(b); });
+  $('addrec').hidden=false; $('btn-addrec').hidden=true; $('sendbox').hidden=true;
+  $('addrec').scrollIntoView({behavior:'smooth',block:'start'});
+}
+$('btn-addrec').onclick = openRecForm;
+$('r-cancel').onclick = ()=>{ $('addrec').hidden=true; $('btn-addrec').hidden=false; };
+$('addrec').onsubmit = e=>{
+  e.preventDefault();
+  if(!answers) return;
+  const t = new Date($('r-date').value+'T12:00:00').getTime() || Date.now();
+  const rec = {t, s:$('r-salon').value.trim().slice(0,20), n:$('r-name').value.trim().slice(0,12), m:recMenus.slice(), x:$('r-text').value.trim().slice(0,80), v:$('r-ok').checked};
+  if(!rec.m.length && !rec.x && !rec.v){ toast('施術内容かメモを入れてください'); return; }
+  try{ localStorage.setItem('kami-salon',rec.s); localStorage.setItem('kami-stylist',rec.n); }catch(e){}
+  answers.rec = (answers.rec||[]).concat([rec]).slice(-3);
+  saveLocal(answers);
+  profile = buildProfile(answers);
+  renderShow(profile, answers.d);
+  $('addrec').hidden=true; $('btn-addrec').hidden=false;
+  const T = TYPES[profile.key];
+  const lines = ['手帳に保存（美容師の記録）', `花タイプ：${T.name}（${profile.code}）`, `${fmtDate(rec.t)}　${[rec.s,rec.n].filter(Boolean).join(' ・ ')}`];
+  if(rec.m.length) lines.push('施術：'+rec.m.join('・'));
+  if(rec.x) lines.push('メモ：'+rec.x);
+  if(rec.v) lines.push('美容師が履歴を確認しました');
+  lines.push('', '美容師に見せる画面：', `${PAGE_URL}#m=${encodeNote(answers)}`);
+  $('a-send-rec').href = `https://line.me/R/oaMessage/${encodeURIComponent(LINE_ID)}/?${encodeURIComponent(lines.join('\n'))}`;
+  $('sendbox').hidden=false;
+  try{ history.replaceState(null,'','#m='+encodeNote(answers)); }catch(e){}
+  $('sendbox').scrollIntoView({behavior:'smooth',block:'center'});
+  toast('記録を保存しました');
+};
 function openShow(a){
   answers = a; profile = buildProfile(a); verified = false;
   setupLine(profile); renderResult(profile); renderStory(profile); renderNote(profile); renderGoals();
   renderShow(profile, a.d);
   $('btn-show-result').hidden = false;
+  $('btn-addrec').hidden = false; $('addrec').hidden = true; $('sendbox').hidden = true;
   show('s-show');
 }
 function showEmpty(){
@@ -1050,6 +1154,7 @@ function showEmpty(){
     <p class="fine">まだ診断していない場合は、下の「もう一度診断」から始めてください。</p>
   </div>`;
   $('btn-show-result').hidden = true;
+  $('btn-addrec').hidden = true; $('addrec').hidden = true; $('sendbox').hidden = true;
   show('s-show');
 }
 $('btn-show-result').onclick = ()=> show('s-result');

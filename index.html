@@ -217,6 +217,9 @@ details.preview pre{margin:8px 0 0;padding:12px;border-radius:12px;background:va
 .mynote .mn-txt b{font-family:var(--display);font-size:16px}
 .mynote .mn-txt span{font-size:12.5px;color:var(--muted)}
 @media (max-width:440px){.mynote{grid-template-columns:44px 1fr}.mynote svg{width:44px;height:44px}.mynote button{grid-column:1/-1;width:100%;padding:14px}}
+/* story image */
+.story-img-wrap{width:min(100%,340px);margin:0 auto}
+#story-img{display:block;width:100%;aspect-ratio:9/16;border-radius:20px;box-shadow:0 10px 30px rgba(20,30,25,.18);background:var(--soft);-webkit-touch-callout:default}
 /* stylist view */
 .show{--c:#888;--g:#888;border-radius:22px;overflow:hidden;background:var(--surface);border:1px solid var(--line)}
 .show-top{padding:18px 20px;background:color-mix(in oklab,var(--c) 15%,var(--surface));display:flex;align-items:center;gap:14px}
@@ -376,7 +379,7 @@ ol.steps .d{font-size:13.5px;color:var(--muted)}
       <details class="preview"><summary>LINEに送られる内容を見る</summary><pre id="save-preview"></pre></details>
     </div>
     <div class="row">
-      <button id="btn-story">ストーリー用の画像を見る</button>
+      <button class="primary" id="btn-story">ストーリー用の画像を保存</button>
       <button class="ghost" id="btn-retry">もう一度診断</button>
     </div>
     <div class="panel stack">
@@ -424,13 +427,14 @@ ol.steps .d{font-size:13.5px;color:var(--muted)}
 
   <!-- story -->
   <section id="s-story" class="stack center" hidden>
-    <p class="lead" style="font-size:14px">この画面をスクリーンショットして、Instagramのストーリーに載せてください。</p>
-    <div class="story" id="story"></div>
+    <p class="lead" style="font-size:14px">保存して、Instagramのストーリーに載せてね。<br><b>#髪の花タイプ診断</b> をつけると見つけてもらいやすくなります。</p>
+    <div class="story-img-wrap"><img id="story-img" alt="ストーリー用の診断結果画像"><div class="story" id="story" hidden></div></div>
+    <button class="primary wide" id="btn-story-save">画像を保存・シェア</button>
+    <p class="fine" id="story-hint">うまく保存できないときは、画像を長押しして「写真に保存」を選んでください。</p>
     <div class="row" style="justify-content:center">
       <button id="btn-story-back">← 結果に戻る</button>
       <button class="ghost" id="btn-copy">文章をコピー</button>
     </div>
-    <p class="fine">本番では、LINEから画像として受け取れるようにします。</p>
   </section>
 
   <!-- route -->
@@ -1017,7 +1021,89 @@ $('btn-start').onclick = startQuiz;
 $('btn-retry').onclick = startQuiz;
 $('btn-sample').onclick = ()=>{ isSample=true; answers=JSON.parse(JSON.stringify(SAMPLE)); finish(); toast('サンプルの回答で表示しています'); };
 $('btn-copy').onclick = ()=> copy(shareText());
-$('btn-story').onclick = ()=> show('s-story');
+/* ---------- story image (1080x1920) ---------- */
+const SITE_LABEL = 'kachelthunder.github.io/kami-techo';
+function hexRgb(h){ const n=parseInt(h.slice(1),16); return [(n>>16)&255,(n>>8)&255,n&255]; }
+function mix(h,w,t){ const a=hexRgb(h), b=hexRgb(w); return `rgb(${a.map((v,i)=>Math.round(v*t+b[i]*(1-t))).join(',')})`; }
+function svgImage(svg){
+  return new Promise((res,rej)=>{ const img=new Image(); img.onload=()=>res(img); img.onerror=rej;
+    img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg.replace('<svg ','<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" ')); });
+}
+function wrapText(ctx, text, maxW){
+  const lines=[]; let cur='';
+  for(const ch of text){ if(ctx.measureText(cur+ch).width>maxW && cur){ lines.push(cur); cur=ch; } else cur+=ch; }
+  if(cur) lines.push(cur); return lines;
+}
+function rrect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+async function makeStoryImage(p){
+  const T=TYPES[p.key], G=GARDENS[p.c+p.s];
+  const W=1080, H=1920, cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+  const ctx=cv.getContext('2d');
+  const D='"Kaisei Decol","Hiragino Mincho ProN","Yu Mincho",serif', B='"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",sans-serif', M='"DM Mono",ui-monospace,monospace';
+  try{ await Promise.all(['700 80px "Kaisei Decol"','500 40px "Kaisei Decol"','700 40px "Zen Kaku Gothic New"','400 40px "Zen Kaku Gothic New"','500 40px "DM Mono"'].map(f=>document.fonts.load(f, '髪の花タイプ診断あいう'+T.name+T.aru+T.line))); }catch(e){}
+  const ink='#1D2823', muted='#5B6862', line='#E3E7E4';
+  const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,mix(T.fx.color,'#FFFFFF',.32)); g.addColorStop(.62,'#FFFFFF'); g.addColorStop(1,'#FFFFFF');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+  ctx.fillStyle=muted; ctx.font=`500 38px ${B}`; ctx.fillText('髪の花タイプ診断｜わたしの髪は', W/2, 290);
+  const fl=await svgImage(flowerSVG(T.fx)); ctx.drawImage(fl, W/2-165, 315, 330, 330);
+  ctx.fillStyle=ink; ctx.font=`700 150px ${D}`; ctx.fillText(T.name, W/2, 800);
+  ctx.font=`500 44px ${M}`; ctx.fillStyle=ink; ctx.fillText(p.code.split('').join(' '), W/2, 868);
+  // garden pill
+  ctx.font=`700 36px ${B}`; const gw=ctx.measureText(G.name).width+90;
+  rrect(ctx,W/2-gw/2,898,gw,64,32); ctx.fillStyle='#FFFFFF'; ctx.fill(); ctx.strokeStyle=mix(G.color,'#E3E7E4',.5); ctx.lineWidth=3; ctx.stroke();
+  ctx.fillStyle=G.color; ctx.beginPath(); ctx.arc(W/2-gw/2+38,930,12,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle=ink; ctx.textAlign='left'; ctx.fillText(G.name, W/2-gw/2+62, 943); ctx.textAlign='center';
+  ctx.font=`500 50px ${D}`; ctx.fillStyle=ink;
+  wrapText(ctx,T.line,880).forEach((l,i)=>ctx.fillText(l, W/2, 1045+i*64));
+  // bars
+  let y=1160; const x0=110, bw=W-220;
+  ['change','care','order'].forEach(ax=>{
+    const sc=p.ax[ax], A=AXES[ax], pct=sc.pos?sc.posPct:100-sc.posPct;
+    ctx.font=`400 32px ${B}`; ctx.fillStyle=muted; ctx.textAlign='left'; ctx.fillText(A.pos,x0,y); ctx.textAlign='right'; ctx.fillText(A.neg,x0+bw,y);
+    ctx.textAlign='center'; ctx.fillStyle=ink; ctx.font=`700 36px ${B}`; ctx.fillText(`${pct}% ${sc.pos?A.pos:A.neg}`, W/2, y);
+    rrect(ctx,x0,y+18,bw,22,11); ctx.fillStyle=line; ctx.fill();
+    const fw=bw*pct/100; rrect(ctx, sc.pos?x0:x0+bw-fw, y+18, fw, 22, 11); ctx.fillStyle=T.fx.color; ctx.fill();
+    y+=105;
+  });
+  // aru box
+  y+=10; ctx.font=`500 40px ${D}`; const al=wrapText(ctx,T.aru,bw-80); const bh=80+al.length*54;
+  rrect(ctx,x0,y-10,bw,bh,28); ctx.fillStyle='#F2F4F2'; ctx.fill();
+  ctx.textAlign='left'; ctx.fillStyle=muted; ctx.font=`400 30px ${B}`; ctx.fillText(`${T.name}タイプのあるある`, x0+40, y+40);
+  ctx.fillStyle=ink; ctx.font=`500 40px ${D}`; al.forEach((l,i)=>ctx.fillText(l, x0+40, y+96+i*54));
+  // footer
+  ctx.textAlign='center'; ctx.fillStyle=ink; ctx.font=`700 40px ${B}`; ctx.fillText('#髪の花タイプ診断　あなたは何の花？', W/2, Math.max(y+bh+70, 1680));
+  ctx.fillStyle=muted; ctx.font=`500 30px ${M}`; ctx.fillText(SITE_LABEL, W/2, Math.max(y+bh+122, 1732));
+  return cv;
+}
+let storyBlob=null, storyUrl=null;
+async function openStory(){
+  show('s-story');
+  const img=$('story-img'); img.removeAttribute('src'); storyBlob=null;
+  try{
+    const cv=await makeStoryImage(profile);
+    storyBlob = await new Promise(r=>cv.toBlob(r,'image/png'));
+    if(storyUrl) URL.revokeObjectURL(storyUrl);
+    storyUrl = storyBlob ? URL.createObjectURL(storyBlob) : cv.toDataURL('image/png');
+    img.src = storyUrl;
+  }catch(e){ $('story').hidden=false; img.hidden=true; $('btn-story-save').hidden=true; $('story-hint').textContent='この画面をスクリーンショットして、ストーリーに載せてください。'; }
+}
+async function saveStory(){
+  if(!storyBlob){ toast('画像を準備中です'); return; }
+  const name = `kami-hana-${TYPES[profile.key].name}.png`;
+  const file = new File([storyBlob], name, {type:'image/png'});
+  try{
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file], text:'#髪の花タイプ診断'}); return;
+    }
+  }catch(e){ if(e && e.name==='AbortError') return; }
+  try{
+    const a=document.createElement('a'); a.href=storyUrl; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+    toast('保存できない場合は、画像を長押ししてください');
+  }catch(e){ toast('画像を長押しして保存してください'); }
+}
+$('btn-story').onclick = openStory;
+$('btn-story-save').onclick = saveStory;
 $('btn-story-back').onclick = ()=> show('s-result');$('btn-route-back').onclick = ()=> show('s-result');
 $('btn-route-copy').onclick = ()=> copy(window.__routeText||'');
 

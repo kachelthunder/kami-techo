@@ -218,6 +218,7 @@ details.preview pre{margin:8px 0 0;padding:12px;border-radius:12px;background:va
 .mynote .mn-txt span{font-size:12.5px;color:var(--muted)}
 @media (max-width:440px){.mynote{grid-template-columns:44px 1fr}.mynote svg{width:44px;height:44px}.mynote button{grid-column:1/-1;width:100%;padding:14px}}
 /* story image */
+.ig-steps{margin:0;padding:12px 16px 12px 2.2em;border-radius:14px;background:var(--surface);border:1px solid var(--line);font-size:14px;text-align:left;width:min(100%,340px);display:flex;flex-direction:column;gap:2px}
 .story-img-wrap{width:min(100%,340px);margin:0 auto}
 #story-img{display:block;width:100%;aspect-ratio:9/16;border-radius:20px;box-shadow:0 10px 30px rgba(20,30,25,.18);background:var(--soft);-webkit-touch-callout:default}
 /* stylist view */
@@ -427,12 +428,15 @@ ol.steps .d{font-size:13.5px;color:var(--muted)}
 
   <!-- story -->
   <section id="s-story" class="stack center" hidden>
-    <p class="lead" style="font-size:14px">保存して、Instagramのストーリーに載せてね。<br><b>#髪の花タイプ診断</b> をつけると見つけてもらいやすくなります。</p>
+    <p class="lead" style="font-size:14px">あなたの結果を、Instagramのストーリーに載せてね。<br><b>#髪の花タイプ診断</b> をつけると見つけてもらいやすくなります。</p>
+    <ol class="ig-steps">
+      <li>下のボタンを押す</li>
+      <li>出てきたメニューで <b>Instagram</b> を選ぶ</li>
+      <li><b>「ストーリーズ」</b> を選ぶと、そのまま載せられます</li>
+    </ol>
+    <button class="primary wide" id="btn-story-save">Instagramのストーリーに載せる</button>
     <div class="story-img-wrap"><img id="story-img" alt="ストーリー用の診断結果画像"><div class="story" id="story" hidden></div></div>
-    <button class="primary wide" id="btn-story-save">画像を保存・シェア</button>
-    <p class="fine" id="story-hint">共有メニューで <b>Instagram →「ストーリーズ」</b> を選ぶと、そのままストーリーに載せられます。うまくいかないときは、画像を長押しして保存してください。</p>
-    <a class="btnlink" id="a-open-ig" href="instagram://camera" hidden><span class="sn">2</span>Instagramのストーリーを開く</a>
-    <p class="fine" id="ig-hint" hidden>開いたら左下の写真から、いま保存した画像を選んでください。</p>
+    <p class="fine" id="story-hint">メニューにInstagramが出ないときは「画像を保存」を選ぶか、画像を長押しして保存し、Instagramのストーリーから選んでください。</p>
     <div class="row" style="justify-content:center">
       <button id="btn-story-back">← 結果に戻る</button>
       <button class="ghost" id="btn-copy">文章をコピー</button>
@@ -1082,7 +1086,6 @@ let storyBlob=null, storyUrl=null;
 async function openStory(){
   show('s-story');
   const img=$('story-img'); img.removeAttribute('src'); storyBlob=null;
-  $('a-open-ig').hidden=true; $('ig-hint').hidden=true;
   try{
     const cv=await makeStoryImage(profile);
     storyBlob = await new Promise(r=>cv.toBlob(r,'image/png'));
@@ -1097,24 +1100,17 @@ async function saveStory(){
   const file = new File([storyBlob], name, {type:'image/png'});
   try{
     if(navigator.canShare && navigator.canShare({files:[file]})){
-      await navigator.share({files:[file], text:'#髪の花タイプ診断'}); showIgStep(); return;
+      await navigator.share({files:[file]}); return;
     }
   }catch(e){ if(e && e.name==='AbortError') return; }
   try{
     const a=document.createElement('a'); a.href=storyUrl; a.download=name; document.body.appendChild(a); a.click(); a.remove();
     toast('保存できない場合は、画像を長押ししてください');
-    showIgStep();
   }catch(e){ toast('画像を長押しして保存してください'); }
 }
 $('btn-story').onclick = openStory;
 $('btn-story-save').onclick = saveStory;
-function showIgStep(){ $('a-open-ig').hidden=false; $('ig-hint').hidden=false; }
-$('a-open-ig').onclick = e=>{
-  const mobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  if(!mobile){ e.preventDefault(); window.open('https://www.instagram.com/','_blank','noopener'); return; }
-  const t = Date.now();
-  setTimeout(()=>{ if(Date.now()-t < 2500 && document.visibilityState==='visible') toast('Instagramアプリを開けませんでした。アプリから直接ストーリーを作成してください'); }, 2000);
-};
+
 $('btn-story-back').onclick = ()=> show('s-result');$('btn-route-back').onclick = ()=> show('s-result');
 $('btn-route-copy').onclick = ()=> copy(window.__routeText||'');
 

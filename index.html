@@ -218,6 +218,8 @@ details.preview pre{margin:8px 0 0;padding:12px;border-radius:12px;background:va
 .mynote .mn-txt span{font-size:12.5px;color:var(--muted)}
 @media (max-width:440px){.mynote{grid-template-columns:44px 1fr}.mynote svg{width:44px;height:44px}.mynote button{grid-column:1/-1;width:100%;padding:14px}}
 /* story image */
+.inapp{width:min(100%,340px);border-radius:14px;padding:14px 16px;background:var(--warn-bg);border:1.5px solid var(--warn);text-align:left;display:flex;flex-direction:column;gap:8px}
+.inapp b{color:var(--warn)}
 .ig-steps{margin:0;padding:12px 16px 12px 2.2em;border-radius:14px;background:var(--surface);border:1px solid var(--line);font-size:14px;text-align:left;width:min(100%,340px);display:flex;flex-direction:column;gap:2px}
 .story-img-wrap{width:min(100%,340px);margin:0 auto}
 #story-img{display:block;width:100%;aspect-ratio:9/16;border-radius:20px;box-shadow:0 10px 30px rgba(20,30,25,.18);background:var(--soft);-webkit-touch-callout:default}
@@ -429,7 +431,12 @@ ol.steps .d{font-size:13.5px;color:var(--muted)}
   <!-- story -->
   <section id="s-story" class="stack center" hidden>
     <p class="lead" style="font-size:14px">あなたの結果を、Instagramのストーリーに載せてね。<br><b>#髪の花タイプ診断</b> をつけると見つけてもらいやすくなります。</p>
-    <ol class="ig-steps">
+    <div class="inapp" id="inapp" hidden>
+      <b id="inapp-title">このままでは画像を保存できません</b>
+      <p id="inapp-text" style="font-size:14px"></p>
+      <button class="primary wide" id="btn-ext">ブラウザで開いて保存する</button>
+    </div>
+    <ol class="ig-steps" id="ig-steps">
       <li>下のボタンを押す</li>
       <li>出てきたメニューで <b>Instagram</b> を選ぶ</li>
       <li><b>「ストーリーズ」</b> を選ぶと、そのまま載せられます</li>
@@ -1083,15 +1090,36 @@ async function makeStoryImage(p){
   return cv;
 }
 let storyBlob=null, storyUrl=null;
+const UA = navigator.userAgent||'';
+const IN_LINE = /\bLine\//i.test(UA);
+const IN_IG = /Instagram/i.test(UA);
+const IN_FB = /FBAN|FBAV/i.test(UA);
+function storyLink(){ return `${PAGE_URL}?openExternalBrowser=1#story&m=${encodeNote(answers)}`; }
+function setupInApp(){
+  const box=$('inapp'), inApp = IN_LINE||IN_IG||IN_FB;
+  box.hidden = !inApp; $('ig-steps').hidden = inApp; $('btn-story-save').hidden = inApp;
+  if(!inApp) return;
+  if(IN_LINE){
+    $('inapp-title').textContent='LINEの中では画像を保存できません';
+    $('inapp-text').textContent='下のボタンで、いつものブラウザ（SafariやChrome）に切り替えてから保存・シェアしてください。';
+    $('btn-ext').textContent='ブラウザで開いて保存する';
+    $('btn-ext').onclick=()=>{ location.href = storyLink(); };
+  }else{
+    $('inapp-title').textContent=(IN_IG?'Instagram':'このアプリ')+'の中では画像を保存できません';
+    $('inapp-text').textContent='右上の「…」から「外部ブラウザで開く」を選ぶか、下のボタンでリンクをコピーしてSafariやChromeに貼り付けてください。';
+    $('btn-ext').textContent='リンクをコピー';
+    $('btn-ext').onclick=()=> copy(storyLink().replace('?openExternalBrowser=1',''));
+  }
+}
 async function openStory(){
-  show('s-story');
+  show('s-story'); setupInApp();
   const img=$('story-img'); img.removeAttribute('src'); storyBlob=null;
   try{
     const cv=await makeStoryImage(profile);
     storyBlob = await new Promise(r=>cv.toBlob(r,'image/png'));
     if(storyUrl) URL.revokeObjectURL(storyUrl);
-    storyUrl = storyBlob ? URL.createObjectURL(storyBlob) : cv.toDataURL('image/png');
-    img.src = storyUrl;
+    storyUrl = storyBlob ? URL.createObjectURL(storyBlob) : null;
+    img.src = cv.toDataURL('image/png');
   }catch(e){ $('story').hidden=false; img.hidden=true; $('btn-story-save').hidden=true; $('story-hint').textContent='この画面をスクリーンショットして、ストーリーに載せてください。'; }
 }
 async function saveStory(){
@@ -1104,8 +1132,8 @@ async function saveStory(){
     }
   }catch(e){ if(e && e.name==='AbortError') return; }
   try{
-    const a=document.createElement('a'); a.href=storyUrl; a.download=name; document.body.appendChild(a); a.click(); a.remove();
-    toast('保存できない場合は、画像を長押ししてください');
+    const a=document.createElement('a'); a.href=storyUrl||$('story-img').src; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+    toast('画像を保存しました。Instagramのストーリーから選んでください');
   }catch(e){ toast('画像を長押しして保存してください'); }
 }
 $('btn-story').onclick = openStory;
@@ -1256,6 +1284,10 @@ $('btn-show-retry').onclick = startQuiz;
 function route(){
   const src = (location.hash||'') + '&' + (location.search||'').replace(/^\?/,'');
   const m = src.match(/(?:^#|&|\?)m=([A-Za-z0-9_\-]+)/);
+  if(m && /(?:^#|&)story\b/.test(src)){
+    const a = decodeNote(m[1]);
+    if(a){ openShow(a); openStory(); return; }
+  }
   if(m){
     const a = decodeNote(m[1]);
     if(a){ try{ localStorage.setItem(STORE_KEY, m[1]); }catch(e){} openShow(a); return; }

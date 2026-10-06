@@ -430,7 +430,9 @@ ol.steps .d{font-size:13.5px;color:var(--muted)}
     <p class="lead" style="font-size:14px">保存して、Instagramのストーリーに載せてね。<br><b>#髪の花タイプ診断</b> をつけると見つけてもらいやすくなります。</p>
     <div class="story-img-wrap"><img id="story-img" alt="ストーリー用の診断結果画像"><div class="story" id="story" hidden></div></div>
     <button class="primary wide" id="btn-story-save">画像を保存・シェア</button>
-    <p class="fine" id="story-hint">うまく保存できないときは、画像を長押しして「写真に保存」を選んでください。</p>
+    <p class="fine" id="story-hint">共有メニューで <b>Instagram →「ストーリーズ」</b> を選ぶと、そのままストーリーに載せられます。うまくいかないときは、画像を長押しして保存してください。</p>
+    <a class="btnlink" id="a-open-ig" href="instagram://story-camera" hidden><span class="sn">2</span>Instagramのストーリーを開く</a>
+    <p class="fine" id="ig-hint" hidden>開いたら左下の写真から、いま保存した画像を選んでください。</p>
     <div class="row" style="justify-content:center">
       <button id="btn-story-back">← 結果に戻る</button>
       <button class="ghost" id="btn-copy">文章をコピー</button>
@@ -1080,6 +1082,7 @@ let storyBlob=null, storyUrl=null;
 async function openStory(){
   show('s-story');
   const img=$('story-img'); img.removeAttribute('src'); storyBlob=null;
+  $('a-open-ig').hidden=true; $('ig-hint').hidden=true;
   try{
     const cv=await makeStoryImage(profile);
     storyBlob = await new Promise(r=>cv.toBlob(r,'image/png'));
@@ -1094,16 +1097,24 @@ async function saveStory(){
   const file = new File([storyBlob], name, {type:'image/png'});
   try{
     if(navigator.canShare && navigator.canShare({files:[file]})){
-      await navigator.share({files:[file], text:'#髪の花タイプ診断'}); return;
+      await navigator.share({files:[file], text:'#髪の花タイプ診断'}); showIgStep(); return;
     }
   }catch(e){ if(e && e.name==='AbortError') return; }
   try{
     const a=document.createElement('a'); a.href=storyUrl; a.download=name; document.body.appendChild(a); a.click(); a.remove();
     toast('保存できない場合は、画像を長押ししてください');
+    showIgStep();
   }catch(e){ toast('画像を長押しして保存してください'); }
 }
 $('btn-story').onclick = openStory;
 $('btn-story-save').onclick = saveStory;
+function showIgStep(){ $('a-open-ig').hidden=false; $('ig-hint').hidden=false; }
+$('a-open-ig').onclick = e=>{
+  const mobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  if(!mobile){ e.preventDefault(); window.open('https://www.instagram.com/','_blank','noopener'); return; }
+  const t = Date.now();
+  setTimeout(()=>{ if(Date.now()-t < 2500 && document.visibilityState==='visible') toast('Instagramアプリを開けませんでした。アプリから直接ストーリーを作成してください'); }, 2000);
+};
 $('btn-story-back').onclick = ()=> show('s-result');$('btn-route-back').onclick = ()=> show('s-result');
 $('btn-route-copy').onclick = ()=> copy(window.__routeText||'');
 
